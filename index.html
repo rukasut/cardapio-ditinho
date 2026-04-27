@@ -939,8 +939,8 @@
 //  CONFIGURAÇÃO SUPABASE — preencha após criar
 //  o projeto em supabase.com
 // ════════════════════════════════════════════════
-const SUPABASE_URL  = 'https://abvocutmjmtnyipxlrwo.supabase.co';
-const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFidm9jdXRtam10bnlpcHhscndvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcyNDcxMDEsImV4cCI6MjA5MjgyMzEwMX0.M7FHqGn1NvriiIIUVC-9mZAX3LCRcarooVEQKXevtYM';
+const SUPABASE_URL  = 'COLE_SUA_URL_AQUI';
+const SUPABASE_KEY  = 'COLE_SUA_ANON_KEY_AQUI';
 const ADMIN_PASSWORD = 'ditinho123'; // troque no primeiro acesso via painel
 // ════════════════════════════════════════════════
 
@@ -1194,18 +1194,22 @@ function finalizarPedido() {
 
 // ── MENU RENDER ──
 function renderMenu() {
-  const cfg = data.config || {};
-  document.getElementById('restaurantName').textContent = '🥟 ' + (cfg.name || 'Pastelaria do Ditinho');
-  document.getElementById('menuTitle').textContent = cfg.name || 'Pastelaria do Ditinho';
-  document.getElementById('menuSubtitle').textContent = cfg.subtitle || 'Escolha seus pastéis favoritos e peça pelo WhatsApp';
+  const nameEl    = document.getElementById('restaurantName');
+  const titleEl   = document.getElementById('menuTitle');
+  const subEl     = document.getElementById('menuSubtitle');
+  const contentEl = document.getElementById('menuContent');
+  if (!contentEl) return;
 
-  const el = document.getElementById('menuContent');
+  const cfg = data.config || {};
+  if (nameEl)  nameEl.textContent  = '🥟 ' + (cfg.name || 'Pastelaria do Ditinho');
+  if (titleEl) titleEl.textContent = cfg.name || 'Pastelaria do Ditinho';
+  if (subEl)   subEl.textContent   = cfg.subtitle || 'Escolha seus pastéis favoritos e peça pelo WhatsApp';
   if (!data.items.length) {
-    el.innerHTML = `<div class="empty-menu"><div class="icon">🥟</div><p style="font-weight:700">Cardápio em atualização.<br>Volte em breve!</p></div>`;
+    contentEl.innerHTML = `<div class="empty-menu"><div class="icon">🥟</div><p style="font-weight:700">Cardápio em atualização.<br>Volte em breve!</p></div>`;
     return;
   }
   const cats = data.categories.length ? data.categories : [{ id:'geral', name:'Produtos', icon:'🥟' }];
-  el.innerHTML = cats.map(cat => {
+  contentEl.innerHTML = cats.map(cat => {
     const catItems = data.items.filter(i => i.category_id === cat.id || (!i.category_id && cat.id === 'geral'));
     if (!catItems.length) return '';
     return `<div class="category-block">

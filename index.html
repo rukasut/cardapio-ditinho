@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Pastelaria do Ditinho</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -813,25 +814,61 @@
     margin-top: 10px;
     background: #e8f5e9;
     border: 2px solid #a5d6a7;
-    border-radius: 10px;
-    padding: 12px 14px;
+    border-radius: 12px;
+    padding: 16px;
     display: none;
+    text-align: center;
   }
 
   .pix-info.show { display: block; }
-  .pix-info p { font-size: 0.8rem; font-weight: 700; color: #2e7d32; margin-bottom: 4px; }
-  .pix-info .pix-key {
-    font-size: 0.9rem; font-weight: 800; color: #1b5e20;
-    word-break: break-all; cursor: pointer;
-    display: flex; align-items: center; gap: 6px;
+
+  .pix-info-title {
+    font-size: 0.8rem; font-weight: 800; color: #2e7d32;
+    margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.05em;
+  }
+
+  .pix-qr-wrap {
+    background: #fff;
+    border-radius: 10px;
+    padding: 12px;
+    display: inline-block;
+    margin-bottom: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+
+  .pix-qr-wrap canvas { display: block; }
+
+  .pix-valor-label {
+    font-size: 0.78rem; color: #388e3c; font-weight: 700; margin-bottom: 4px;
+  }
+
+  .pix-valor-destaque {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.3rem; color: #1b5e20; margin-bottom: 10px;
+  }
+
+  .pix-key-row {
+    display: flex; align-items: center; justify-content: center;
+    gap: 6px; flex-wrap: wrap;
+  }
+
+  .pix-key-text {
+    font-size: 0.82rem; font-weight: 800; color: #1b5e20;
+    word-break: break-all;
   }
 
   .pix-copy-btn {
     background: #2e7d32; color: #fff; border: none;
-    padding: 3px 10px; border-radius: 6px;
+    padding: 4px 12px; border-radius: 6px;
     font-size: 0.72rem; font-weight: 800;
     cursor: pointer; font-family: 'Nunito', sans-serif;
-    white-space: nowrap;
+    white-space: nowrap; transition: background 0.15s;
+  }
+
+  .pix-copy-btn:hover { background: #1b5e20; }
+
+  .pix-instrucao {
+    font-size: 0.74rem; color: #558b2f; margin-top: 8px; line-height: 1.4;
   }
 
   .obs-section { margin-top: 8px; }
@@ -1003,13 +1040,28 @@
           </div>
         </div>
 
-        <!-- Pix (mostra chave cadastrada) -->
+        <!-- Pix com QR Code -->
         <div class="pix-info" id="pixInfo">
-          <p>Chave Pix do estabelecimento:</p>
-          <div class="pix-key">
-            <span id="pixKeyDisplay">—</span>
-            <button class="pix-copy-btn" onclick="copiarPix()">Copiar</button>
+          <div class="pix-info-title">⚡ Pagamento via Pix</div>
+          <div class="pix-qr-wrap">
+            <canvas id="pixQrCanvas"></canvas>
           </div>
+          <div class="pix-valor-label">Valor do pedido</div>
+          <div class="pix-valor-destaque" id="pixValorDestaque">R$ 0,00</div>
+
+          <div style="margin:10px 0 6px;font-size:0.74rem;font-weight:800;color:#2e7d32;text-transform:uppercase;letter-spacing:0.05em;">Pix Copia e Cola</div>
+          <div style="display:flex;gap:6px;align-items:stretch;">
+            <textarea id="pixCopiaCola" readonly
+              style="flex:1;background:#fff;border:2px solid #a5d6a7;border-radius:8px;padding:8px;
+                     font-family:'Nunito',sans-serif;font-size:0.7rem;color:#1b5e20;
+                     resize:none;height:56px;line-height:1.4;word-break:break-all;"></textarea>
+            <button class="pix-copy-btn" onclick="copiarPixCola()"
+              style="padding:8px 12px;border-radius:8px;align-self:stretch;font-size:0.78rem;">
+              📋 Copiar
+            </button>
+          </div>
+
+          <div class="pix-instrucao">Escaneie o QR Code ou copie o código acima no seu app bancário</div>
         </div>
       </div>
 
@@ -1097,11 +1149,20 @@
           <input type="text" id="newCategory" placeholder="Ex: Pastéis Salgados, Bebidas">
         </div>
         <div class="form-group">
-          <label>Ícone</label>
+          <label>Emoji (opcional)</label>
           <input type="text" id="newCategoryIcon" placeholder="🥟" style="width:68px;text-align:center">
+        </div>
+        <div class="form-group">
+          <label>Ícone personalizado</label>
+          <label class="img-upload-label">
+            <input type="file" id="newCategoryImg" accept="image/*" onchange="previewCatImg(this)">
+            🖼️ Imagem
+            <img id="catImgPreview" class="img-preview-sm" alt="">
+          </label>
         </div>
         <button class="btn btn-primary" onclick="addCategory()">+ Adicionar</button>
       </div>
+      <p style="color:var(--muted);font-size:0.74rem;margin-top:6px">💡 Se carregar uma imagem, ela substitui o emoji. Ideal para ícones da marca.</p>
       <div class="admin-list" id="categoryList"></div>
     </div>
 
@@ -1229,8 +1290,8 @@
 //  CONFIGURAÇÃO SUPABASE — preencha após criar
 //  o projeto em supabase.com
 // ════════════════════════════════════════════════
-const SUPABASE_URL  = 'https://abvocutmjmtnyipxlrwo.supabase.co';
-const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFidm9jdXRtam10bnlpcHhscndvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcyNDcxMDEsImV4cCI6MjA5MjgyMzEwMX0.M7FHqGn1NvriiIIUVC-9mZAX3LCRcarooVEQKXevtYM';
+const SUPABASE_URL  = 'COLE_SUA_URL_AQUI';
+const SUPABASE_KEY  = 'COLE_SUA_ANON_KEY_AQUI';
 const ADMIN_PASSWORD = 'ditinho123'; // troque no primeiro acesso via painel
 // ════════════════════════════════════════════════
 
@@ -1342,6 +1403,14 @@ function imgEl(src, fallback, cls) {
   return `<span style="font-size:${cls==='thumb'?'1.3':'2.2'}rem">${fallback}</span>`;
 }
 
+// Exibe ícone da categoria: imagem personalizada ou emoji
+function catIconEl(cat, size = '28px') {
+  if (cat.icon_url) {
+    return `<img src="${cat.icon_url}" alt="${cat.name}" style="width:${size};height:${size};object-fit:contain;vertical-align:middle;border-radius:4px;">`;
+  }
+  return cat.icon || '🥟';
+}
+
 // ── CART ──
 function toggleCart() {
   const d = document.getElementById('cartDrawer');
@@ -1381,7 +1450,9 @@ function abrirResumo() {
   const items = data.items.filter(i => cart[i.id]);
   if (!items.length) { toast('⚠️ Adicione itens antes de finalizar'); return; }
   const catEmoji = {};
-  data.categories.forEach(c => catEmoji[c.id] = c.icon);
+  data.categories.forEach(c => catEmoji[c.id] = c.icon_url
+    ? `<img src="${c.icon_url}" style="width:20px;height:20px;object-fit:contain;">`
+    : c.icon);
   let total = 0;
   document.getElementById('resumoItens').innerHTML = items.map(item => {
     const qty = cart[item.id], sub = qty * item.price;
@@ -1456,7 +1527,9 @@ function renderCart() {
   document.getElementById('checkoutBtn').disabled = false;
   let total = 0;
   const catEmoji = {};
-  data.categories.forEach(c => catEmoji[c.id] = c.icon);
+  data.categories.forEach(c => catEmoji[c.id] = c.icon_url
+    ? `<img src="${c.icon_url}" style="width:20px;height:20px;object-fit:contain;">`
+    : c.icon);
   el.innerHTML = items.map(item => {
     const qty = cart[item.id], sub = qty * item.price;
     total += sub;
@@ -1525,7 +1598,7 @@ function renderMenu() {
       catNav.classList.add('visible');
       catNavInner.innerHTML = catsComItens.map((cat, i) =>
         `<button class="cat-nav-btn${i===0?' active':''}" id="navbtn-${cat.id}" onclick="scrollToCategory('${cat.id}')">
-          ${cat.icon} ${cat.name}
+          ${catIconEl(cat, '20px')} ${cat.name}
         </button>`
       ).join('');
     } else {
@@ -1539,12 +1612,15 @@ function renderMenu() {
       .sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
     if (!catItems.length) return '';
     return `<div class="category-block" id="cat-${cat.id}">
-      <div class="cat-label">${cat.icon} ${cat.name}</div>
+      <div class="cat-label">${catIconEl(cat, '24px')} ${cat.name}</div>
       <div class="items-grid">
         ${catItems.map(item => {
           const qty = getQty(item.id);
+          const catFallback = cat.icon_url
+            ? `<img src="${cat.icon_url}" alt="" style="width:48px;height:48px;object-fit:contain;">`
+            : cat.icon || '🥟';
           return `<div class="item-card">
-            <div class="item-img">${imgEl(item.img_url, cat.icon, 'card')}</div>
+            <div class="item-img">${imgEl(item.img_url, catFallback, 'card')}</div>
             <div class="item-body">
               <div class="item-name">${item.name}</div>
               ${item.description ? `<div class="item-desc">${item.description}</div>` : ''}
@@ -1620,16 +1696,42 @@ async function saveConfig() {
   toast('✅ Configurações salvas!');
 }
 
+function previewCatImg(input) {
+  if (!input.files || !input.files[0]) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const preview = document.getElementById('catImgPreview');
+    preview.src = e.target.result;
+    preview.style.display = 'block';
+  };
+  reader.readAsDataURL(input.files[0]);
+}
+
 async function addCategory() {
-  const name = document.getElementById('newCategory').value.trim();
-  const icon = document.getElementById('newCategoryIcon').value.trim() || '🥟';
+  const name    = document.getElementById('newCategory').value.trim();
+  const icon    = document.getElementById('newCategoryIcon').value.trim() || '🥟';
+  const imgFile = document.getElementById('newCategoryImg').files[0];
   if (!name) { toast('⚠️ Digite o nome da categoria'); return; }
-  const { data: row, error } = await sb.from('categories').insert({ name, icon, position: data.categories.length }).select().single();
+  toast('⏳ Salvando categoria...');
+  // faz upload do ícone personalizado se existir
+  let icon_url = '';
+  if (imgFile) {
+    const ext  = imgFile.name.split('.').pop();
+    const path = `cat-${Date.now()}.${ext}`;
+    const { error: upErr } = await sb.storage.from('product-images').upload(path, imgFile, { upsert: true });
+    if (!upErr) {
+      const { data: urlData } = sb.storage.from('product-images').getPublicUrl(path);
+      icon_url = urlData.publicUrl;
+    }
+  }
+  const { data: row, error } = await sb.from('categories').insert({ name, icon, icon_url, position: data.categories.length }).select().single();
   if (error) { toast('❌ Erro ao salvar'); return; }
   data.categories.push(row);
   document.getElementById('newCategory').value = '';
   document.getElementById('newCategoryIcon').value = '';
-  renderAdmin(); toast('✅ Categoria adicionada!');
+  document.getElementById('newCategoryImg').value = '';
+  document.getElementById('catImgPreview').style.display = 'none';
+  renderAdmin(); renderMenu(); toast('✅ Categoria adicionada!');
 }
 
 async function removeCategory(id) {
@@ -1683,7 +1785,9 @@ function renderAdmin() {
   document.getElementById('categoryList').innerHTML = data.categories.length
     ? data.categories.map(c => `
       <div class="admin-list-item">
-        <span style="font-size:1.3rem">${c.icon}</span>
+        <div class="admin-thumb" style="background:var(--creme2);display:flex;align-items:center;justify-content:center;font-size:1.3rem;">
+          ${c.icon_url ? `<img src="${c.icon_url}" style="width:100%;height:100%;object-fit:contain;padding:4px;">` : c.icon}
+        </div>
         <div class="admin-item-info">
           <div class="admin-item-name">${c.name}</div>
           <div class="admin-item-sub">${data.items.filter(i=>i.category_id===c.id).length} produtos</div>
@@ -1693,19 +1797,19 @@ function renderAdmin() {
     : '<p style="color:var(--muted);font-size:0.8rem;padding:6px 0">Nenhuma categoria</p>';
 
   document.getElementById('newItemCategory').innerHTML = data.categories.map(c =>
-    `<option value="${c.id}">${c.icon} ${c.name}</option>`).join('');
+    `<option value="${c.id}">${c.icon_url ? '' : c.icon} ${c.name}</option>`).join('');
 
   document.getElementById('itemList').innerHTML = data.items.length
     ? data.items.map(item => {
         const cat = data.categories.find(c => c.id === item.category_id);
-        const emoji = cat ? cat.icon : '🥟';
+        const emoji = cat ? (cat.icon_url ? `<img src="${cat.icon_url}" style="width:16px;height:16px;object-fit:contain;vertical-align:middle;">` : cat.icon) : '🥟';
         return `<div class="admin-list-item">
           <div class="admin-thumb">${imgEl(item.img_url, emoji, 'thumb')}</div>
           <div class="admin-item-info">
             <div class="admin-item-name">${item.name}</div>
             <div class="admin-item-sub">R$ ${Number(item.price).toFixed(2).replace('.',',')}${item.description?' · '+item.description:''}</div>
           </div>
-          ${cat?`<span class="tag">${cat.icon} ${cat.name}</span>`:''}
+          ${cat?`<span class="tag">${cat.icon_url ? `<img src="${cat.icon_url}" style="width:12px;height:12px;object-fit:contain;vertical-align:middle;">` : cat.icon} ${cat.name}</span>`:''}
           <button class="btn btn-edit" onclick="abrirEditModal('${item.id}')">✏️</button>
           <button class="btn btn-danger" onclick="removeItem('${item.id}')">Remover</button>
         </div>`;
@@ -1717,20 +1821,93 @@ function renderAdmin() {
 let pagamentoSelecionado = '';
 let trocoNecessario = false;
 
+// ── PIX BR CODE ──
+function crc16(str) {
+  let crc = 0xFFFF;
+  for (let i = 0; i < str.length; i++) {
+    crc ^= str.charCodeAt(i) << 8;
+    for (let j = 0; j < 8; j++) {
+      crc = (crc & 0x8000) ? (crc << 1) ^ 0x1021 : crc << 1;
+    }
+  }
+  return (crc & 0xFFFF).toString(16).toUpperCase().padStart(4, '0');
+}
+
+function emv(id, value) {
+  return id + String(value.length).padStart(2, '0') + value;
+}
+
+function gerarPixPayload(chave, valor, nome, cidade) {
+  // limpa CPF deixando só números
+  const chavaLimpa = chave.replace(/\D/g, '');
+  const merchantInfo = emv('00', 'BR.GOV.BCB.PIX') + emv('01', chavaLimpa);
+  const valorStr = valor.toFixed(2);
+  const nomeStr = (nome || 'PASTELARIA DITINHO').toUpperCase().substring(0, 25).normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  const cidadeStr = (cidade || 'SAO PAULO').toUpperCase().substring(0, 15).normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+  let payload =
+    emv('00', '01') +                          // payload format
+    emv('26', merchantInfo) +                   // merchant account info
+    emv('52', '0000') +                         // MCC
+    emv('53', '986') +                          // BRL
+    emv('54', valorStr) +                       // valor
+    emv('58', 'BR') +                           // país
+    emv('59', nomeStr) +                        // nome
+    emv('60', cidadeStr) +                      // cidade
+    emv('62', emv('05', '***'));                // reference label
+
+  payload += emv('63', crc16(payload + '6304'));
+  return payload;
+}
+
+function gerarQrPix(total) {
+  const chave = (data.config.pix_key || '').trim();
+  const nome  = data.config.name || 'Pastelaria do Ditinho';
+  if (!chave) return;
+
+  const payload = gerarPixPayload(chave, total, nome, 'SAO PAULO');
+
+  const canvas = document.getElementById('pixQrCanvas');
+  QRCode.toCanvas(canvas, payload, {
+    width: 180, margin: 1,
+    color: { dark: '#1b5e20', light: '#ffffff' }
+  });
+
+  document.getElementById('pixValorDestaque').textContent =
+    'R$ ' + total.toFixed(2).replace('.', ',');
+  document.getElementById('pixCopiaCola').value = payload;
+}
+
+function copiarPixCola() {
+  const payload = document.getElementById('pixCopiaCola').value;
+  if (!payload) { toast('⚠️ Nenhum código gerado'); return; }
+  navigator.clipboard.writeText(payload).then(() => toast('✅ Código Pix copiado!'));
+}
+
 function selecionarPag(tipo) {
   pagamentoSelecionado = tipo;
   ['dinheiro','credito','debito','pix'].forEach(t => {
     document.getElementById('pag-' + t).classList.toggle('selected', t === tipo);
   });
   document.getElementById('trocoSection').classList.toggle('show', tipo === 'dinheiro');
+
   const pixInfo = document.getElementById('pixInfo');
   if (tipo === 'pix') {
     const chave = data.config.pix_key || '';
-    document.getElementById('pixKeyDisplay').textContent = chave || 'Não cadastrada';
+    if (!chave) {
+      toast('⚠️ Chave Pix não cadastrada no admin');
+      pagamentoSelecionado = '';
+      document.getElementById('pag-pix').classList.remove('selected');
+      return;
+    }
+    // calcula total atual do carrinho
+    const total = data.items.filter(i => cart[i.id]).reduce((acc, i) => acc + cart[i.id] * i.price, 0);
+    gerarQrPix(total);
     pixInfo.classList.add('show');
   } else {
     pixInfo.classList.remove('show');
   }
+
   if (tipo !== 'dinheiro') {
     trocoNecessario = false;
     document.getElementById('troco-sim').classList.remove('selected');
@@ -1744,12 +1921,6 @@ function selecionarTroco(sim) {
   document.getElementById('troco-sim').classList.toggle('selected', sim);
   document.getElementById('troco-nao').classList.toggle('selected', !sim);
   document.getElementById('trocoValor').classList.toggle('show', sim);
-}
-
-function copiarPix() {
-  const chave = data.config.pix_key || '';
-  if (!chave) { toast('⚠️ Chave Pix não cadastrada'); return; }
-  navigator.clipboard.writeText(chave).then(() => toast('✅ Chave Pix copiada!'));
 }
 
 function getPagamentoTexto() {

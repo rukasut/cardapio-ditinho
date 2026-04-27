@@ -871,27 +871,6 @@
     font-size: 0.74rem; color: #558b2f; margin-top: 8px; line-height: 1.4;
   }
 
-  .pix-comprovante-btn {
-    margin-top: 10px;
-    width: 100%;
-    background: #25d366;
-    color: #fff;
-    border: none;
-    padding: 10px 14px;
-    border-radius: 10px;
-    font-family: 'Nunito', sans-serif;
-    font-weight: 800;
-    font-size: 0.82rem;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    transition: background 0.15s;
-  }
-
-  .pix-comprovante-btn:hover { background: #1fb858; }
-
   .obs-section { margin-top: 8px; }
 
   /* ── RESUMO OBS ── */
@@ -1083,9 +1062,6 @@
           </div>
 
           <div class="pix-instrucao">Escaneie o QR Code ou copie o código acima no seu app bancário</div>
-          <button class="pix-comprovante-btn" onclick="enviarComprovante()">
-            📎 Após pagar, envie o comprovante no WhatsApp
-          </button>
         </div>
       </div>
 
@@ -1314,8 +1290,8 @@
 //  CONFIGURAÇÃO SUPABASE — preencha após criar
 //  o projeto em supabase.com
 // ════════════════════════════════════════════════
-const SUPABASE_URL  = 'https://abvocutmjmtnyipxlrwo.supabase.co';
-const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFidm9jdXRtam10bnlpcHhscndvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcyNDcxMDEsImV4cCI6MjA5MjgyMzEwMX0.M7FHqGn1NvriiIIUVC-9mZAX3LCRcarooVEQKXevtYM';
+const SUPABASE_URL  = 'COLE_SUA_URL_AQUI';
+const SUPABASE_KEY  = 'COLE_SUA_ANON_KEY_AQUI';
 const ADMIN_PASSWORD = 'ditinho123'; // troque no primeiro acesso via painel
 // ════════════════════════════════════════════════
 
@@ -1528,6 +1504,7 @@ function enviarWhatsApp() {
   });
   msg += `\n*Total: R$ ${total.toFixed(2).replace('.',',')}*`;
   msg += `\n*Pagamento:* ${getPagamentoTexto()}`;
+  if (pagamentoSelecionado === 'pix') msg += `\n\n_Após o pagamento, envie o comprovante aqui no WhatsApp_ 📎`;
   const obs = document.getElementById('resumoObs')?.value?.trim();
   if (obs) msg += `\n*Obs:* ${obs}`;
   msg += `\n\n_Pedido pelo cardápio digital_ 📱`;
@@ -1912,14 +1889,6 @@ function copiarPixCola() {
   const payload = document.getElementById('pixCopiaCola').value;
   if (!payload) { toast('⚠️ Nenhum código gerado'); return; }
   navigator.clipboard.writeText(payload).then(() => toast('✅ Código Pix copiado!'));
-}
-
-function enviarComprovante() {
-  const whats = (data.config.whatsapp || '').replace(/\D/g, '');
-  if (!whats) { toast('⚠️ WhatsApp não configurado.'); return; }
-  const total = data.items.filter(i => cart[i.id]).reduce((acc, i) => acc + cart[i.id] * i.price, 0);
-  const msg = `Olá! Acabei de fazer o pagamento via Pix no valor de *R$ ${total.toFixed(2).replace('.', ',')}*. Segue o comprovante! 📎`;
-  window.open(`https://wa.me/${whats}?text=${encodeURIComponent(msg)}`, '_blank');
 }
 
 function selecionarPag(tipo) {

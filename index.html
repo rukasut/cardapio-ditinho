@@ -1,0 +1,1351 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pastelaria do Ditinho</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --verde:    #3a6b5c;
+    --verde2:   #2e5549;
+    --laranja:  #e8622a;
+    --amarelo:  #f5c223;
+    --creme:    #f5edd8;
+    --creme2:   #ede3cc;
+    --text:     #1e1e1e;
+    --muted:    #6b6253;
+    --white:    #ffffff;
+    --radius:   14px;
+    --shadow:   0 4px 20px rgba(0,0,0,0.10);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--creme);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: var(--verde);
+    padding: 0 24px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.18);
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .brand-logo {
+    width: 40px;
+    height: 40px;
+    background: var(--amarelo);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  }
+
+  .brand-name {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.35rem;
+    color: var(--white);
+    line-height: 1;
+  }
+
+  .brand-name span { color: var(--amarelo); }
+
+  .header-right { display: flex; align-items: center; gap: 8px; }
+
+  .admin-link {
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: rgba(255,255,255,0.7);
+    padding: 5px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 700;
+    transition: all 0.2s;
+  }
+
+  .admin-link:hover { background: rgba(255,255,255,0.22); color: #fff; }
+
+  .admin-logout {
+    background: rgba(232,98,42,0.25);
+    border: 1px solid var(--laranja);
+    color: var(--laranja);
+    padding: 5px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 700;
+    display: none;
+    transition: all 0.15s;
+  }
+
+  .admin-logout:hover { background: rgba(232,98,42,0.4); }
+
+  .cart-btn {
+    background: var(--laranja);
+    color: #fff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 10px;
+    font-weight: 800;
+    font-size: 0.88rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s;
+    box-shadow: 0 2px 8px rgba(232,98,42,0.35);
+  }
+
+  .cart-btn:hover { background: #d4541f; transform: translateY(-1px); }
+
+  .cart-count {
+    background: var(--amarelo);
+    color: var(--text);
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: 900;
+  }
+
+  /* ── HERO BANNER ── */
+  .hero {
+    background: var(--verde);
+    padding: 36px 24px 48px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0; right: 0;
+    height: 40px;
+    background: var(--creme);
+    clip-path: ellipse(55% 100% at 50% 100%);
+  }
+
+  .hero-tag {
+    display: inline-block;
+    background: var(--laranja);
+    color: #fff;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 4px 14px;
+    border-radius: 999px;
+    margin-bottom: 12px;
+  }
+
+  .hero h1 {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(2rem, 6vw, 3.2rem);
+    color: var(--white);
+    line-height: 1.05;
+    margin-bottom: 8px;
+  }
+
+  .hero h1 span { color: var(--amarelo); }
+
+  .hero p {
+    color: rgba(255,255,255,0.75);
+    font-size: 0.95rem;
+    font-weight: 600;
+  }
+
+  /* ── PAGES ── */
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* ── MENU ── */
+  .menu-body { padding: 16px 20px 100px; max-width: 1100px; margin: 0 auto; }
+
+  .category-block { margin-bottom: 32px; }
+
+  .cat-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--verde);
+    color: #fff;
+    font-family: 'Fredoka One', cursive;
+    font-size: 1rem;
+    padding: 5px 16px;
+    border-radius: 999px;
+    margin-bottom: 14px;
+    box-shadow: 0 2px 8px rgba(58,107,92,0.25);
+  }
+
+  .items-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: 14px;
+  }
+
+  .item-card {
+    background: var(--white);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.2s, box-shadow 0.2s;
+    border: 2px solid transparent;
+  }
+
+  .item-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 28px rgba(0,0,0,0.13);
+    border-color: var(--amarelo);
+  }
+
+  .item-img {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+    background: var(--creme2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+    flex-shrink: 0;
+  }
+
+  .item-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .item-body { padding: 12px 14px; flex: 1; display: flex; flex-direction: column; gap: 4px; }
+  .item-name { font-weight: 800; font-size: 0.95rem; color: var(--text); }
+  .item-desc { font-size: 0.78rem; color: var(--muted); line-height: 1.4; flex: 1; }
+
+  .item-footer {
+    padding: 10px 14px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-top: 1px solid var(--creme2);
+  }
+
+  .item-price {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.1rem;
+    color: var(--verde);
+  }
+
+  .qty-control { display: flex; align-items: center; gap: 6px; }
+
+  .qty-btn {
+    background: var(--creme);
+    border: 2px solid var(--creme2);
+    color: var(--verde);
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 900;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+  }
+
+  .qty-btn:hover { background: var(--laranja); border-color: var(--laranja); color: #fff; }
+  .qty-display { font-weight: 900; font-size: 0.95rem; min-width: 20px; text-align: center; color: var(--text); }
+
+  .empty-menu { text-align: center; padding: 60px 20px; color: var(--muted); }
+  .empty-menu .icon { font-size: 3.5rem; margin-bottom: 12px; }
+
+  /* ── CART DRAWER ── */
+  .overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 200; display: none; opacity: 0; transition: opacity 0.25s;
+  }
+  .overlay.open { display: block; opacity: 1; }
+
+  .drawer {
+    position: fixed; right: 0; top: 0; bottom: 0;
+    width: min(420px, 100vw);
+    background: var(--white);
+    z-index: 300;
+    display: flex; flex-direction: column;
+    transform: translateX(100%);
+    transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+    box-shadow: -4px 0 30px rgba(0,0,0,0.15);
+  }
+  .drawer.open { transform: translateX(0); }
+
+  .drawer-header {
+    background: var(--verde);
+    padding: 18px 20px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+
+  .drawer-title {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.2rem;
+    color: var(--white);
+  }
+
+  .close-btn {
+    background: rgba(255,255,255,0.15);
+    border: none; color: #fff;
+    width: 32px; height: 32px;
+    border-radius: 8px; cursor: pointer;
+    font-size: 1rem;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.15s;
+  }
+
+  .close-btn:hover { background: rgba(255,255,255,0.25); }
+
+  .drawer-body { flex: 1; overflow-y: auto; padding: 16px; background: var(--creme); }
+
+  .cart-item {
+    background: var(--white);
+    border-radius: 10px;
+    padding: 12px;
+    margin-bottom: 8px;
+    display: flex; align-items: center; gap: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+
+  .cart-item-thumb {
+    width: 48px; height: 48px;
+    border-radius: 8px;
+    object-fit: cover;
+    background: var(--creme2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.4rem;
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+
+  .cart-item-thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+  .cart-item-info { flex: 1; }
+  .cart-item-name { font-weight: 800; font-size: 0.88rem; }
+  .cart-item-price { color: var(--muted); font-size: 0.78rem; margin-top: 2px; }
+
+  .cart-item-remove {
+    background: none; border: none; color: #c0392b;
+    cursor: pointer; font-size: 0.72rem; padding: 4px 8px;
+    border-radius: 6px; font-family: 'Nunito', sans-serif; font-weight: 700;
+    transition: background 0.15s;
+  }
+  .cart-item-remove:hover { background: rgba(192,57,43,0.1); }
+
+  .obs-section { margin-top: 12px; }
+  .obs-section label { font-size: 0.78rem; font-weight: 700; color: var(--muted); display: block; margin-bottom: 6px; }
+  .obs-section textarea {
+    width: 100%; background: var(--white);
+    border: 2px solid var(--creme2); color: var(--text);
+    padding: 10px; border-radius: 8px;
+    font-family: 'Nunito', sans-serif; font-size: 0.85rem;
+    resize: vertical; min-height: 70px;
+  }
+  .obs-section textarea:focus { outline: none; border-color: var(--verde); }
+
+  .drawer-footer {
+    padding: 16px; background: var(--white);
+    border-top: 2px solid var(--creme2);
+  }
+
+  .total-row {
+    display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;
+  }
+
+  .total-label { font-weight: 700; color: var(--muted); }
+
+  .total-value {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.4rem;
+    color: var(--verde);
+  }
+
+  .checkout-btn {
+    width: 100%; background: var(--laranja); color: #fff;
+    border: none; padding: 14px; border-radius: 12px;
+    font-family: 'Fredoka One', cursive; font-size: 1.05rem;
+    cursor: pointer; display: flex; align-items: center;
+    justify-content: center; gap: 8px; transition: all 0.2s;
+    box-shadow: 0 4px 14px rgba(232,98,42,0.35);
+  }
+  .checkout-btn:hover { background: #d4541f; transform: translateY(-1px); }
+  .checkout-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+  .empty-cart { text-align: center; padding: 40px 20px; color: var(--muted); }
+
+  /* ── LOGIN MODAL ── */
+  .modal-bg {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.65);
+    z-index: 500; display: none;
+    align-items: center; justify-content: center;
+  }
+  .modal-bg.open { display: flex; }
+
+  .modal {
+    background: var(--white); border-radius: 18px;
+    padding: 32px; width: min(360px, 90vw);
+    display: flex; flex-direction: column; gap: 14px;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.25);
+  }
+
+  .modal-icon { font-size: 2rem; text-align: center; }
+  .modal h2 { font-family: 'Fredoka One', cursive; font-size: 1.5rem; color: var(--verde); text-align: center; }
+  .modal p { color: var(--muted); font-size: 0.85rem; text-align: center; line-height: 1.5; }
+
+  .modal input {
+    background: var(--creme); border: 2px solid var(--creme2);
+    color: var(--text); padding: 10px 14px; border-radius: 10px;
+    font-family: 'Nunito', sans-serif; font-size: 0.9rem; width: 100%;
+  }
+  .modal input:focus { outline: none; border-color: var(--verde); }
+
+  .modal-error { color: #c0392b; font-size: 0.8rem; text-align: center; display: none; font-weight: 700; }
+
+  .modal-footer { display: flex; gap: 8px; }
+  .btn-full { flex: 1; padding: 10px; border-radius: 10px; border: none; cursor: pointer; font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 0.9rem; transition: all 0.15s; }
+  .btn-verde { background: var(--verde); color: #fff; }
+  .btn-verde:hover { background: var(--verde2); }
+  .btn-ghost { background: var(--creme); color: var(--muted); border: 2px solid var(--creme2); }
+  .btn-ghost:hover { color: var(--text); }
+
+  /* ── ADMIN PAGE ── */
+  .admin-wrap { max-width: 820px; margin: 0 auto; padding: 28px 20px 80px; }
+
+  .admin-hero {
+    background: var(--verde);
+    border-radius: 16px;
+    padding: 20px 24px;
+    margin-bottom: 24px;
+    display: flex; align-items: center; gap: 14px;
+    color: #fff;
+  }
+
+  .admin-hero-icon { font-size: 2rem; }
+  .admin-hero h2 { font-family: 'Fredoka One', cursive; font-size: 1.5rem; }
+  .admin-hero p { font-size: 0.82rem; opacity: 0.75; margin-top: 2px; }
+
+  .admin-card {
+    background: var(--white); border-radius: 14px;
+    padding: 20px; margin-bottom: 16px;
+    box-shadow: var(--shadow);
+  }
+
+  .admin-card h3 {
+    font-family: 'Fredoka One', cursive; font-size: 1rem;
+    color: var(--verde); margin-bottom: 14px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--creme2);
+    display: flex; align-items: center; gap: 6px;
+  }
+
+  .form-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; }
+  .form-group { display: flex; flex-direction: column; gap: 4px; }
+  .form-group label { font-size: 0.74rem; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    background: var(--creme); border: 2px solid var(--creme2);
+    color: var(--text); padding: 8px 12px; border-radius: 10px;
+    font-family: 'Nunito', sans-serif; font-size: 0.85rem; min-width: 0;
+  }
+
+  .form-group input:focus,
+  .form-group select:focus,
+  .form-group textarea:focus { outline: none; border-color: var(--verde); }
+
+  .form-group.grow { flex: 1; min-width: 140px; }
+
+  .btn {
+    padding: 8px 18px; border-radius: 10px; border: none; cursor: pointer;
+    font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 0.85rem;
+    transition: all 0.15s; white-space: nowrap; align-self: flex-end;
+  }
+  .btn-primary { background: var(--verde); color: #fff; }
+  .btn-primary:hover { background: var(--verde2); }
+  .btn-danger { background: transparent; color: #c0392b; border: 2px solid #c0392b; }
+  .btn-danger:hover { background: rgba(192,57,43,0.08); }
+
+  /* foto upload */
+  .img-upload-label {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--creme); border: 2px dashed var(--creme2);
+    border-radius: 10px; padding: 8px 12px;
+    cursor: pointer; font-size: 0.82rem; color: var(--muted);
+    font-weight: 700; transition: border-color 0.15s;
+    white-space: nowrap;
+  }
+  .img-upload-label:hover { border-color: var(--verde); color: var(--verde); }
+  .img-upload-label input { display: none; }
+
+  .img-preview-sm {
+    width: 36px; height: 36px; border-radius: 8px;
+    object-fit: cover; border: 2px solid var(--creme2);
+    display: none;
+  }
+
+  .admin-list { margin-top: 14px; display: flex; flex-direction: column; gap: 8px; }
+
+  .admin-list-item {
+    background: var(--creme); border-radius: 10px;
+    padding: 10px 14px; display: flex; align-items: center; gap: 12px;
+    border: 2px solid var(--creme2);
+  }
+
+  .admin-thumb {
+    width: 42px; height: 42px; border-radius: 8px;
+    object-fit: cover; background: var(--creme2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.3rem; flex-shrink: 0; overflow: hidden;
+  }
+  .admin-thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+  .admin-item-info { flex: 1; }
+  .admin-item-name { font-weight: 800; font-size: 0.88rem; }
+  .admin-item-sub { color: var(--muted); font-size: 0.74rem; margin-top: 2px; }
+
+  .tag {
+    background: var(--verde); color: #fff;
+    font-size: 0.68rem; font-weight: 700;
+    padding: 2px 8px; border-radius: 999px;
+  }
+
+  /* ── BOTÃO FINALIZAR (rodapé do cardápio) ── */
+  .menu-footer {
+    padding: 8px 20px 40px;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .finalizar-btn-big {
+    width: 100%;
+    background: var(--laranja);
+    color: #fff;
+    border: none;
+    padding: 18px 24px;
+    border-radius: 16px;
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.2rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: all 0.2s;
+    box-shadow: 0 6px 20px rgba(232,98,42,0.4);
+  }
+
+  .finalizar-btn-big:hover { background: #d4541f; transform: translateY(-2px); box-shadow: 0 10px 28px rgba(232,98,42,0.45); }
+  .finalizar-btn-big:disabled { opacity: 0.35; cursor: not-allowed; transform: none; box-shadow: none; }
+
+  .finalizar-btn-big .fbb-left { display: flex; align-items: center; gap: 10px; }
+  .finalizar-btn-big .fbb-total {
+    background: rgba(0,0,0,0.18);
+    padding: 4px 12px;
+    border-radius: 8px;
+    font-size: 1rem;
+  }
+
+  /* ── MODAL RESUMO ── */
+  .resumo-bg {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.65);
+    z-index: 500; display: none;
+    align-items: flex-end;
+    justify-content: center;
+  }
+
+  .resumo-bg.open { display: flex; }
+
+  .resumo-modal {
+    background: var(--white);
+    border-radius: 22px 22px 0 0;
+    width: min(520px, 100vw);
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 -8px 40px rgba(0,0,0,0.2);
+    animation: slideUp 0.3s cubic-bezier(0.4,0,0.2,1);
+  }
+
+  @keyframes slideUp {
+    from { transform: translateY(60px); opacity: 0; }
+    to   { transform: translateY(0);    opacity: 1; }
+  }
+
+  .resumo-header {
+    background: var(--verde);
+    padding: 18px 20px;
+    display: flex; align-items: center; justify-content: space-between;
+    flex-shrink: 0;
+  }
+
+  .resumo-header-left { display: flex; flex-direction: column; }
+  .resumo-header h3 { font-family: 'Fredoka One', cursive; font-size: 1.2rem; color: #fff; }
+  .resumo-header p  { font-size: 0.78rem; color: rgba(255,255,255,0.7); margin-top: 2px; }
+
+  .resumo-body { overflow-y: auto; padding: 16px 20px; flex: 1; background: var(--creme); }
+
+  .resumo-item {
+    background: var(--white);
+    border-radius: 10px;
+    padding: 11px 14px;
+    margin-bottom: 8px;
+    display: flex; align-items: center; gap: 12px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+  }
+
+  .resumo-item-thumb {
+    width: 44px; height: 44px; border-radius: 8px;
+    background: var(--creme2); overflow: hidden; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; font-size: 1.3rem;
+  }
+
+  .resumo-item-thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+  .resumo-item-info { flex: 1; }
+  .resumo-item-name { font-weight: 800; font-size: 0.88rem; }
+  .resumo-item-sub  { font-size: 0.76rem; color: var(--muted); margin-top: 2px; }
+  .resumo-item-price { font-family: 'Fredoka One', cursive; font-size: 1rem; color: var(--verde); flex-shrink: 0; }
+
+  .resumo-obs {
+    background: var(--white);
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-top: 4px;
+    border: 2px solid var(--creme2);
+  }
+
+  .resumo-obs label { font-size: 0.74rem; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 6px; }
+
+  .resumo-obs textarea {
+    width: 100%; background: var(--creme);
+    border: 2px solid var(--creme2); color: var(--text);
+    padding: 8px 10px; border-radius: 8px;
+    font-family: 'Nunito', sans-serif; font-size: 0.85rem;
+    resize: vertical; min-height: 60px;
+  }
+
+  .resumo-obs textarea:focus { outline: none; border-color: var(--verde); }
+
+  .resumo-footer {
+    padding: 14px 20px 20px;
+    background: var(--white);
+    border-top: 2px solid var(--creme2);
+    flex-shrink: 0;
+  }
+
+  .resumo-total-row {
+    display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;
+  }
+
+  .resumo-total-label { font-weight: 800; color: var(--muted); font-size: 0.9rem; }
+  .resumo-total-value { font-family: 'Fredoka One', cursive; font-size: 1.5rem; color: var(--verde); }
+
+  .resumo-actions { display: flex; gap: 10px; }
+
+  .resumo-cancel {
+    flex: 1; padding: 12px; border-radius: 12px;
+    background: var(--creme); border: 2px solid var(--creme2);
+    color: var(--muted); font-family: 'Nunito', sans-serif;
+    font-weight: 800; font-size: 0.9rem; cursor: pointer; transition: all 0.15s;
+  }
+
+  .resumo-cancel:hover { color: var(--text); border-color: #ccc; }
+
+  .resumo-whats {
+    flex: 2; padding: 12px; border-radius: 12px;
+    background: #25d366; border: none;
+    color: #fff; font-family: 'Fredoka One', cursive;
+    font-size: 1rem; cursor: pointer; transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    box-shadow: 0 4px 14px rgba(37,211,102,0.35);
+  }
+
+  .resumo-whats:hover { background: #1fb858; transform: translateY(-1px); }
+
+  /* ── TOAST ── */
+  .toast {
+    position: fixed; bottom: 24px; left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--verde); color: #fff; padding: 10px 22px;
+    border-radius: 10px; font-size: 0.85rem; font-weight: 700;
+    opacity: 0; transition: all 0.3s; pointer-events: none;
+    z-index: 999; white-space: nowrap;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  @media (max-width: 500px) {
+    .items-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .form-row { flex-direction: column; }
+    .form-group.grow { min-width: auto; }
+    .hero h1 { font-size: 1.8rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="brand">
+    <div class="brand-logo">🥟</div>
+    <div class="brand-name">Pastelaria <span>do Ditinho</span></div>
+  </div>
+  <div class="header-right">
+    <button class="admin-logout" id="logoutBtn" onclick="logout()">Sair do Admin</button>
+    <button class="cart-btn" onclick="toggleCart()">
+      🛒 Carrinho <span class="cart-count" id="cartCount">0</span>
+    </button>
+  </div>
+</header>
+
+<!-- MENU PAGE -->
+<div id="menuPage" class="page active">
+  <div class="hero">
+    <div class="hero-tag">Feito na hora 🔥</div>
+    <h1>Pastelaria <span>do Ditinho</span></h1>
+    <p>Escolha seus pastéis favoritos e peça pelo WhatsApp</p>
+  </div>
+  <div class="menu-body">
+    <div id="menuContent"></div>
+  </div>
+  <div class="menu-footer">
+    <button class="finalizar-btn-big" id="finalizarBtnBig" onclick="abrirResumo()" disabled>
+      <div class="fbb-left">📲 Ver resumo e finalizar pedido</div>
+      <div class="fbb-total" id="finalizarBtnTotal">R$ 0,00</div>
+    </button>
+  </div>
+</div>
+
+<!-- MODAL RESUMO DO PEDIDO -->
+<div class="resumo-bg" id="resumoBg" onclick="fecharResumo(event)">
+  <div class="resumo-modal" onclick="event.stopPropagation()">
+    <div class="resumo-header">
+      <div class="resumo-header-left">
+        <h3>🧾 Resumo do Pedido</h3>
+        <p>Confira tudo antes de enviar</p>
+      </div>
+      <button class="close-btn" onclick="fecharResumo()">✕</button>
+    </div>
+    <div class="resumo-body">
+      <div id="resumoItens"></div>
+      <div class="resumo-obs">
+        <label>Observações / pagamento</label>
+        <textarea id="resumoObs" placeholder="Troco para, restrição alimentar, preferências..."></textarea>
+      </div>
+    </div>
+    <div class="resumo-footer">
+      <div class="resumo-total-row">
+        <span class="resumo-total-label">Total do pedido</span>
+        <span class="resumo-total-value" id="resumoTotal">R$ 0,00</span>
+      </div>
+      <div class="resumo-actions">
+        <button class="resumo-cancel" onclick="fecharResumo()">← Continuar</button>
+        <button class="resumo-whats" onclick="enviarWhatsApp()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+          Enviar pelo WhatsApp
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN PAGE -->
+<div id="adminPage" class="page">
+  <div class="admin-wrap">
+    <div class="admin-hero">
+      <div class="admin-hero-icon">⚙️</div>
+      <div>
+        <h2>Painel Admin</h2>
+        <p>Gerencie cardápio, categorias e configurações</p>
+      </div>
+    </div>
+
+    <!-- Config -->
+    <div class="admin-card">
+      <h3>🏪 Configurações do Estabelecimento</h3>
+      <div class="form-row">
+        <div class="form-group grow">
+          <label>Nome</label>
+          <input type="text" id="adminName" placeholder="Pastelaria do Ditinho">
+        </div>
+        <div class="form-group grow">
+          <label>Slogan</label>
+          <input type="text" id="adminSubtitle" placeholder="Feito com amor e tradição">
+        </div>
+      </div>
+      <div class="form-row" style="margin-top:10px">
+        <div class="form-group grow">
+          <label>WhatsApp (DDI+DDD+número)</label>
+          <input type="text" id="adminWhats" placeholder="5517999999999">
+        </div>
+        <button class="btn btn-primary" onclick="saveConfig()">💾 Salvar</button>
+      </div>
+    </div>
+
+    <!-- Senha -->
+    <div class="admin-card">
+      <h3>🔐 Alterar Senha</h3>
+      <div class="form-row">
+        <div class="form-group grow">
+          <label>Nova senha</label>
+          <input type="password" id="newPw1" placeholder="Mín. 4 caracteres">
+        </div>
+        <div class="form-group grow">
+          <label>Confirmar</label>
+          <input type="password" id="newPw2" placeholder="Repita a senha">
+        </div>
+        <button class="btn btn-primary" onclick="changePassword()">Alterar</button>
+      </div>
+    </div>
+
+    <!-- Categorias -->
+    <div class="admin-card">
+      <h3>📂 Categorias</h3>
+      <div class="form-row">
+        <div class="form-group grow">
+          <label>Nome da categoria</label>
+          <input type="text" id="newCategory" placeholder="Ex: Pastéis Salgados, Bebidas">
+        </div>
+        <div class="form-group">
+          <label>Ícone</label>
+          <input type="text" id="newCategoryIcon" placeholder="🥟" style="width:68px;text-align:center">
+        </div>
+        <button class="btn btn-primary" onclick="addCategory()">+ Adicionar</button>
+      </div>
+      <div class="admin-list" id="categoryList"></div>
+    </div>
+
+    <!-- Itens -->
+    <div class="admin-card">
+      <h3>➕ Adicionar Produto</h3>
+      <div class="form-row">
+        <div class="form-group grow">
+          <label>Nome do produto</label>
+          <input type="text" id="newItemName" placeholder="Ex: Pastel de Carne">
+        </div>
+        <div class="form-group">
+          <label>Preço (R$)</label>
+          <input type="number" id="newItemPrice" placeholder="8.00" step="0.01" style="width:100px">
+        </div>
+        <div class="form-group">
+          <label>Categoria</label>
+          <select id="newItemCategory" style="min-width:130px"></select>
+        </div>
+      </div>
+      <div class="form-row" style="margin-top:10px">
+        <div class="form-group grow">
+          <label>Descrição (opcional)</label>
+          <input type="text" id="newItemDesc" placeholder="Ex: Carne moída temperada, massa crocante">
+        </div>
+        <div class="form-group">
+          <label>Foto do produto</label>
+          <label class="img-upload-label">
+            <input type="file" id="newItemImg" accept="image/*" onchange="previewImg(this)">
+            📷 Selecionar
+            <img id="imgPreview" class="img-preview-sm" alt="">
+          </label>
+        </div>
+        <button class="btn btn-primary" onclick="addItem()">+ Adicionar</button>
+      </div>
+      <div class="admin-list" id="itemList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- LOGIN MODAL -->
+<div class="modal-bg" id="loginModal">
+  <div class="modal">
+    <div class="modal-icon">🥟</div>
+    <h2>Área Admin</h2>
+    <p>Digite a senha para acessar o painel de gerenciamento do cardápio.</p>
+    <input type="password" id="loginPwInput" placeholder="Senha" onkeydown="if(event.key==='Enter')doLogin()">
+    <div class="modal-error" id="loginError">Senha incorreta. Tente novamente.</div>
+    <div class="modal-footer">
+      <button class="btn-full btn-ghost" onclick="closeLoginModal()">Cancelar</button>
+      <button class="btn-full btn-verde" onclick="doLogin()">Entrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- CART DRAWER -->
+<div class="overlay" id="overlay" onclick="toggleCart()"></div>
+<div class="drawer" id="cartDrawer">
+  <div class="drawer-header">
+    <span class="drawer-title">🛒 Seu Pedido</span>
+    <button class="close-btn" onclick="toggleCart()">✕</button>
+  </div>
+  <div class="drawer-body">
+    <div id="cartItems"></div>
+    <div class="obs-section">
+      <label>Observações / forma de pagamento</label>
+      <textarea id="obsText" placeholder="Alguma preferência, restrição alimentar, troco para..."></textarea>
+    </div>
+  </div>
+  <div class="drawer-footer">
+    <div class="total-row">
+      <span class="total-label">Total do pedido</span>
+      <span class="total-value" id="totalValue">R$ 0,00</span>
+    </div>
+    <button class="checkout-btn" id="checkoutBtn" onclick="finalizarPedido()">
+      📲 Finalizar pelo WhatsApp
+    </button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ════════════════════════════════════════════════
+//  CONFIGURAÇÃO SUPABASE — preencha após criar
+//  o projeto em supabase.com
+// ════════════════════════════════════════════════
+const SUPABASE_URL  = 'https://abvocutmjmtnyipxlrwo.supabase.co/rest/v1/';
+const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFidm9jdXRtam10bnlpcHhscndvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcyNDcxMDEsImV4cCI6MjA5MjgyMzEwMX0.M7FHqGn1NvriiIIUVC-9mZAX3LCRcarooVEQKXevtYM';
+const ADMIN_PASSWORD = 'ditinho123'; // troque no primeiro acesso via painel
+// ════════════════════════════════════════════════
+
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let data = { config: {}, categories: [], items: [] };
+let cart = {};
+let isAdmin = false;
+
+// ── LOADING STATE ──
+function setLoading(on) {
+  const el = document.getElementById('menuContent');
+  if (on) el.innerHTML = `<div class="empty-menu"><div class="icon" style="animation:spin 1s linear infinite;display:inline-block">⏳</div><p style="font-weight:700;margin-top:8px">Carregando cardápio...</p></div>`;
+}
+
+// ── SUPABASE: CARREGAR DADOS ──
+async function loadData() {
+  setLoading(true);
+  try {
+    const [cfgRes, catRes, itemRes] = await Promise.all([
+      sb.from('config').select('*').single(),
+      sb.from('categories').select('*').order('position'),
+      sb.from('items').select('*').order('position')
+    ]);
+    data.config     = cfgRes.data  || {};
+    data.categories = catRes.data  || [];
+    data.items      = itemRes.data || [];
+  } catch(e) {
+    console.error('Erro ao carregar dados:', e);
+    data = { config: {}, categories: [], items: [] };
+  }
+  renderMenu();
+}
+
+// ── AUTH ──
+function openLoginModal() {
+  document.getElementById('loginModal').classList.add('open');
+  document.getElementById('loginPwInput').value = '';
+  document.getElementById('loginError').style.display = 'none';
+  setTimeout(() => document.getElementById('loginPwInput').focus(), 60);
+}
+
+function closeLoginModal() { document.getElementById('loginModal').classList.remove('open'); }
+
+async function doLogin() {
+  const pw = document.getElementById('loginPwInput').value;
+  // senha fica na tabela config
+  const storedPw = data.config.password || ADMIN_PASSWORD;
+  if (pw === storedPw) {
+    isAdmin = true;
+    closeLoginModal();
+    document.getElementById('menuPage').classList.remove('active');
+    document.getElementById('adminPage').classList.add('active');
+    document.getElementById('logoutBtn').style.display = 'block';
+    renderAdmin();
+  } else {
+    document.getElementById('loginError').style.display = 'block';
+    document.getElementById('loginPwInput').value = '';
+    document.getElementById('loginPwInput').focus();
+  }
+}
+
+function logout() {
+  isAdmin = false;
+  document.getElementById('adminPage').classList.remove('active');
+  document.getElementById('menuPage').classList.add('active');
+  document.getElementById('logoutBtn').style.display = 'none';
+  window.history.replaceState({}, '', window.location.pathname);
+}
+
+async function changePassword() {
+  const p1 = document.getElementById('newPw1').value;
+  const p2 = document.getElementById('newPw2').value;
+  if (!p1) { toast('⚠️ Digite a nova senha'); return; }
+  if (p1 !== p2) { toast('⚠️ As senhas não coincidem'); return; }
+  if (p1.length < 4) { toast('⚠️ Senha muito curta (mín. 4 caracteres)'); return; }
+  await sb.from('config').upsert({ id: 1, password: p1 });
+  data.config.password = p1;
+  document.getElementById('newPw1').value = '';
+  document.getElementById('newPw2').value = '';
+  toast('✅ Senha alterada!');
+}
+
+// ── IMAGE HELPERS ──
+function previewImg(input) {
+  if (!input.files || !input.files[0]) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const preview = document.getElementById('imgPreview');
+    preview.src = e.target.result;
+    preview.style.display = 'block';
+  };
+  reader.readAsDataURL(input.files[0]);
+}
+
+async function uploadImg(file) {
+  if (!file) return '';
+  // Faz upload para o Supabase Storage bucket "product-images"
+  const ext  = file.name.split('.').pop();
+  const path = `${Date.now()}.${ext}`;
+  const { error } = await sb.storage.from('product-images').upload(path, file, { upsert: true });
+  if (error) { console.error(error); return ''; }
+  const { data: urlData } = sb.storage.from('product-images').getPublicUrl(path);
+  return urlData.publicUrl;
+}
+
+function imgEl(src, fallback, cls) {
+  if (src) return `<img src="${src}" alt="" style="width:100%;height:100%;object-fit:cover;display:block;">`;
+  return `<span style="font-size:${cls==='thumb'?'1.3':'2.2'}rem">${fallback}</span>`;
+}
+
+// ── CART ──
+function toggleCart() {
+  const d = document.getElementById('cartDrawer');
+  const o = document.getElementById('overlay');
+  const open = d.classList.contains('open');
+  d.classList.toggle('open', !open);
+  o.classList.toggle('open', !open);
+  if (!open) renderCart();
+}
+
+function addToCart(id) { cart[id] = (cart[id] || 0) + 1; updateCartUI(); }
+
+function removeFromCart(id) {
+  if (cart[id] > 0) cart[id]--;
+  if (cart[id] === 0) delete cart[id];
+  updateCartUI(); renderCart();
+}
+
+function removeItemFully(id) { delete cart[id]; updateCartUI(); renderCart(); }
+function getQty(id) { return cart[id] || 0; }
+
+function updateCartUI() {
+  const count = Object.values(cart).reduce((a, b) => a + b, 0);
+  document.getElementById('cartCount').textContent = count;
+  const total = data.items.filter(i => cart[i.id]).reduce((acc, i) => acc + cart[i.id] * i.price, 0);
+  const btn = document.getElementById('finalizarBtnBig');
+  const btnTotal = document.getElementById('finalizarBtnTotal');
+  if (btn) {
+    btn.disabled = count === 0;
+    if (btnTotal) btnTotal.textContent = 'R$ ' + total.toFixed(2).replace('.', ',');
+  }
+  renderMenu();
+}
+
+// ── RESUMO MODAL ──
+function abrirResumo() {
+  const items = data.items.filter(i => cart[i.id]);
+  if (!items.length) { toast('⚠️ Adicione itens antes de finalizar'); return; }
+  const catEmoji = {};
+  data.categories.forEach(c => catEmoji[c.id] = c.icon);
+  let total = 0;
+  document.getElementById('resumoItens').innerHTML = items.map(item => {
+    const qty = cart[item.id], sub = qty * item.price;
+    total += sub;
+    const emoji = catEmoji[item.category_id] || '🥟';
+    return `<div class="resumo-item">
+      <div class="resumo-item-thumb">${imgEl(item.img_url, emoji, 'thumb')}</div>
+      <div class="resumo-item-info">
+        <div class="resumo-item-name">${qty}× ${item.name}</div>
+        <div class="resumo-item-sub">R$ ${item.price.toFixed(2).replace('.',',')} cada</div>
+      </div>
+      <div class="resumo-item-price">R$ ${sub.toFixed(2).replace('.',',')}</div>
+    </div>`;
+  }).join('');
+  document.getElementById('resumoTotal').textContent = 'R$ ' + total.toFixed(2).replace('.', ',');
+  document.getElementById('resumoObs').value = '';
+  document.getElementById('resumoBg').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function fecharResumo(e) {
+  if (e && e.target !== document.getElementById('resumoBg')) return;
+  document.getElementById('resumoBg').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function enviarWhatsApp() {
+  const whats = (data.config.whatsapp || '').replace(/\D/g,'');
+  if (!whats) { toast('⚠️ WhatsApp não configurado. Fale com o administrador.'); return; }
+  const items = data.items.filter(i => cart[i.id]);
+  if (!items.length) return;
+  let total = 0;
+  let msg = `*🥟 Novo Pedido — ${data.config.name || 'Pastelaria do Ditinho'}*\n\n*Itens:*\n`;
+  items.forEach(item => {
+    const qty = cart[item.id], sub = qty * item.price;
+    total += sub;
+    msg += `• ${qty}× ${item.name} — R$ ${sub.toFixed(2).replace('.',',')}\n`;
+  });
+  msg += `\n*Total: R$ ${total.toFixed(2).replace('.',',')}*`;
+  const obs = document.getElementById('resumoObs')?.value?.trim();
+  if (obs) msg += `\n\n*Obs:* ${obs}`;
+  msg += `\n\n_Pedido pelo cardápio digital_ 📱`;
+  window.open(`https://wa.me/${whats}?text=${encodeURIComponent(msg)}`, '_blank');
+  cart = {};
+  updateCartUI();
+  document.getElementById('resumoBg').classList.remove('open');
+  document.body.style.overflow = '';
+  toast('✅ Redirecionando para o WhatsApp!');
+}
+
+function renderCart() {
+  const el = document.getElementById('cartItems');
+  const items = data.items.filter(i => cart[i.id]);
+  if (!items.length) {
+    el.innerHTML = '<div class="empty-cart"><div style="font-size:2.5rem;margin-bottom:8px">🛒</div><p style="font-weight:700;color:var(--muted)">Carrinho vazio</p></div>';
+    document.getElementById('totalValue').textContent = 'R$ 0,00';
+    document.getElementById('checkoutBtn').disabled = true;
+    return;
+  }
+  document.getElementById('checkoutBtn').disabled = false;
+  let total = 0;
+  const catEmoji = {};
+  data.categories.forEach(c => catEmoji[c.id] = c.icon);
+  el.innerHTML = items.map(item => {
+    const qty = cart[item.id], sub = qty * item.price;
+    total += sub;
+    const emoji = catEmoji[item.category_id] || '🥟';
+    return `<div class="cart-item">
+      <div class="cart-item-thumb">${imgEl(item.img_url, emoji, 'thumb')}</div>
+      <div class="cart-item-info">
+        <div class="cart-item-name">${qty}× ${item.name}</div>
+        <div class="cart-item-price">R$ ${item.price.toFixed(2).replace('.',',')} cada · <strong>R$ ${sub.toFixed(2).replace('.',',')}</strong></div>
+      </div>
+      <button class="cart-item-remove" onclick="removeItemFully('${item.id}')">remover</button>
+    </div>`;
+  }).join('');
+  document.getElementById('totalValue').textContent = 'R$ ' + total.toFixed(2).replace('.', ',');
+}
+
+function finalizarPedido() {
+  const whats = (data.config.whatsapp || '').replace(/\D/g,'');
+  if (!whats) { toast('⚠️ WhatsApp não configurado. Fale com o administrador.'); return; }
+  const items = data.items.filter(i => cart[i.id]);
+  if (!items.length) return;
+  let total = 0;
+  let msg = `*🥟 Novo Pedido — ${data.config.name || 'Pastelaria do Ditinho'}*\n\n*Itens:*\n`;
+  items.forEach(item => {
+    const qty = cart[item.id], sub = qty * item.price;
+    total += sub;
+    msg += `• ${qty}× ${item.name} — R$ ${sub.toFixed(2).replace('.',',')}\n`;
+  });
+  msg += `\n*Total: R$ ${total.toFixed(2).replace('.',',')}*`;
+  const obs = document.getElementById('obsText')?.value?.trim();
+  if (obs) msg += `\n\n*Obs:* ${obs}`;
+  msg += `\n\n_Pedido pelo cardápio digital_ 📱`;
+  window.open(`https://wa.me/${whats}?text=${encodeURIComponent(msg)}`, '_blank');
+  cart = {}; updateCartUI(); toggleCart();
+  toast('✅ Redirecionando para o WhatsApp!');
+}
+
+// ── MENU RENDER ──
+function renderMenu() {
+  const cfg = data.config || {};
+  document.getElementById('restaurantName').textContent = '🥟 ' + (cfg.name || 'Pastelaria do Ditinho');
+  document.getElementById('menuTitle').textContent = cfg.name || 'Pastelaria do Ditinho';
+  document.getElementById('menuSubtitle').textContent = cfg.subtitle || 'Escolha seus pastéis favoritos e peça pelo WhatsApp';
+
+  const el = document.getElementById('menuContent');
+  if (!data.items.length) {
+    el.innerHTML = `<div class="empty-menu"><div class="icon">🥟</div><p style="font-weight:700">Cardápio em atualização.<br>Volte em breve!</p></div>`;
+    return;
+  }
+  const cats = data.categories.length ? data.categories : [{ id:'geral', name:'Produtos', icon:'🥟' }];
+  el.innerHTML = cats.map(cat => {
+    const catItems = data.items.filter(i => i.category_id === cat.id || (!i.category_id && cat.id === 'geral'));
+    if (!catItems.length) return '';
+    return `<div class="category-block">
+      <div class="cat-label">${cat.icon} ${cat.name}</div>
+      <div class="items-grid">
+        ${catItems.map(item => {
+          const qty = getQty(item.id);
+          return `<div class="item-card">
+            <div class="item-img">${imgEl(item.img_url, cat.icon, 'card')}</div>
+            <div class="item-body">
+              <div class="item-name">${item.name}</div>
+              ${item.description ? `<div class="item-desc">${item.description}</div>` : ''}
+            </div>
+            <div class="item-footer">
+              <div class="item-price">R$ ${Number(item.price).toFixed(2).replace('.',',')}</div>
+              <div class="qty-control">
+                <button class="qty-btn" onclick="removeFromCart('${item.id}')">−</button>
+                <span class="qty-display">${qty}</span>
+                <button class="qty-btn" onclick="addToCart('${item.id}')">+</button>
+              </div>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── ADMIN ──
+async function saveConfig() {
+  const name     = document.getElementById('adminName').value.trim();
+  const subtitle = document.getElementById('adminSubtitle').value.trim();
+  const whatsapp = document.getElementById('adminWhats').value.trim();
+  await sb.from('config').upsert({ id: 1, name, subtitle, whatsapp, password: data.config.password || ADMIN_PASSWORD });
+  data.config = { ...data.config, name, subtitle, whatsapp };
+  renderMenu();
+  toast('✅ Configurações salvas!');
+}
+
+async function addCategory() {
+  const name = document.getElementById('newCategory').value.trim();
+  const icon = document.getElementById('newCategoryIcon').value.trim() || '🥟';
+  if (!name) { toast('⚠️ Digite o nome da categoria'); return; }
+  const { data: row, error } = await sb.from('categories').insert({ name, icon, position: data.categories.length }).select().single();
+  if (error) { toast('❌ Erro ao salvar'); return; }
+  data.categories.push(row);
+  document.getElementById('newCategory').value = '';
+  document.getElementById('newCategoryIcon').value = '';
+  renderAdmin(); toast('✅ Categoria adicionada!');
+}
+
+async function removeCategory(id) {
+  if (!confirm('Remover categoria?')) return;
+  await sb.from('categories').delete().eq('id', id);
+  data.categories = data.categories.filter(c => c.id !== id);
+  renderAdmin(); toast('🗑️ Removida');
+}
+
+async function addItem() {
+  const name     = document.getElementById('newItemName').value.trim();
+  const price    = parseFloat(document.getElementById('newItemPrice').value);
+  const desc     = document.getElementById('newItemDesc').value.trim();
+  const cat_id   = document.getElementById('newItemCategory').value;
+  const imgFile  = document.getElementById('newItemImg').files[0];
+  if (!name) { toast('⚠️ Digite o nome do produto'); return; }
+  if (isNaN(price) || price < 0) { toast('⚠️ Preço inválido'); return; }
+
+  toast('⏳ Salvando produto...');
+  const img_url = await uploadImg(imgFile);
+
+  const { data: row, error } = await sb.from('items').insert({
+    name, price, description: desc, category_id: cat_id, img_url, position: data.items.length
+  }).select().single();
+
+  if (error) { toast('❌ Erro ao salvar produto'); console.error(error); return; }
+  data.items.push(row);
+  document.getElementById('newItemName').value = '';
+  document.getElementById('newItemPrice').value = '';
+  document.getElementById('newItemDesc').value = '';
+  document.getElementById('newItemImg').value = '';
+  document.getElementById('imgPreview').style.display = 'none';
+  renderAdmin(); renderMenu();
+  toast('✅ Produto adicionado!');
+}
+
+async function removeItem(id) {
+  await sb.from('items').delete().eq('id', id);
+  data.items = data.items.filter(i => i.id !== id);
+  delete cart[id]; updateCartUI(); renderAdmin();
+  toast('🗑️ Produto removido');
+}
+
+function renderAdmin() {
+  const cfg = data.config || {};
+  document.getElementById('adminName').value     = cfg.name     || '';
+  document.getElementById('adminSubtitle').value = cfg.subtitle || '';
+  document.getElementById('adminWhats').value    = cfg.whatsapp || '';
+
+  document.getElementById('categoryList').innerHTML = data.categories.length
+    ? data.categories.map(c => `
+      <div class="admin-list-item">
+        <span style="font-size:1.3rem">${c.icon}</span>
+        <div class="admin-item-info">
+          <div class="admin-item-name">${c.name}</div>
+          <div class="admin-item-sub">${data.items.filter(i=>i.category_id===c.id).length} produtos</div>
+        </div>
+        <button class="btn btn-danger" onclick="removeCategory('${c.id}')">Remover</button>
+      </div>`).join('')
+    : '<p style="color:var(--muted);font-size:0.8rem;padding:6px 0">Nenhuma categoria</p>';
+
+  document.getElementById('newItemCategory').innerHTML = data.categories.map(c =>
+    `<option value="${c.id}">${c.icon} ${c.name}</option>`).join('');
+
+  document.getElementById('itemList').innerHTML = data.items.length
+    ? data.items.map(item => {
+        const cat = data.categories.find(c => c.id === item.category_id);
+        const emoji = cat ? cat.icon : '🥟';
+        return `<div class="admin-list-item">
+          <div class="admin-thumb">${imgEl(item.img_url, emoji, 'thumb')}</div>
+          <div class="admin-item-info">
+            <div class="admin-item-name">${item.name}</div>
+            <div class="admin-item-sub">R$ ${Number(item.price).toFixed(2).replace('.',',')}${item.description?' · '+item.description:''}</div>
+          </div>
+          ${cat?`<span class="tag">${cat.icon} ${cat.name}</span>`:''}
+          <button class="btn btn-danger" onclick="removeItem('${item.id}')">Remover</button>
+        </div>`;
+      }).join('')
+    : '<p style="color:var(--muted);font-size:0.8rem;padding:6px 0">Nenhum produto cadastrado</p>';
+}
+
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2800);
+}
+
+// ── INIT ──
+loadData().then(() => {
+  if (window.location.search.includes('admin')) openLoginModal();
+});
+</script>
+</body>
+</html>

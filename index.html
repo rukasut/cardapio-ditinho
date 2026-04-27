@@ -1084,7 +1084,7 @@
       <!-- Observações -->
       <div class="resumo-obs">
         <label>Observações gerais (opcional)</label>
-        <textarea id="resumoObs" placeholder="Local de entrega, qual entrada..."></textarea>
+        <textarea id="resumoObs" placeholder="Qual local de entrega, qual entrada..."></textarea>
       </div>
     </div>
     <div class="resumo-footer">
@@ -1293,8 +1293,8 @@
       <span class="total-label">Total do pedido</span>
       <span class="total-value" id="totalValue">R$ 0,00</span>
     </div>
-    <button class="checkout-btn" id="checkoutBtn" onclick="finalizarPedido()">
-      📲 Finalizar pelo WhatsApp
+    <button class="checkout-btn" id="checkoutBtn" onclick="toggleCart(); abrirResumo()">
+      📲 Ver resumo e finalizar
     </button>
   </div>
 </div>
@@ -1306,8 +1306,8 @@
 //  CONFIGURAÇÃO SUPABASE — preencha após criar
 //  o projeto em supabase.com
 // ════════════════════════════════════════════════
-const SUPABASE_URL  = 'https://abvocutmjmtnyipxlrwo.supabase.co';
-const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFidm9jdXRtam10bnlpcHhscndvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcyNDcxMDEsImV4cCI6MjA5MjgyMzEwMX0.M7FHqGn1NvriiIIUVC-9mZAX3LCRcarooVEQKXevtYM';
+const SUPABASE_URL  = 'COLE_SUA_URL_AQUI';
+const SUPABASE_KEY  = 'COLE_SUA_ANON_KEY_AQUI';
 const ADMIN_PASSWORD = 'ditinho123'; // troque no primeiro acesso via painel
 // ════════════════════════════════════════════════
 

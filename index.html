@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Pastelaria do Ditinho</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -836,7 +836,7 @@
     box-shadow: 0 2px 8px rgba(0,0,0,0.08);
   }
 
-  .pix-qr-wrap canvas { display: block; }
+  .pix-qr-wrap canvas, .pix-qr-wrap img { display: block; margin: 0 auto; }
 
   .pix-valor-label {
     font-size: 0.78rem; color: #388e3c; font-weight: 700; margin-bottom: 4px;
@@ -869,6 +869,19 @@
 
   .pix-instrucao {
     font-size: 0.74rem; color: #558b2f; margin-top: 8px; line-height: 1.4;
+  }
+
+  .pix-comprovante-aviso {
+    margin-top: 10px;
+    background: #fff8e1;
+    border: 2px solid #ffe082;
+    border-radius: 8px;
+    padding: 9px 12px;
+    font-size: 0.78rem;
+    font-weight: 800;
+    color: #e65100;
+    line-height: 1.4;
+    text-align: center;
   }
 
   .obs-section { margin-top: 8px; }
@@ -1044,7 +1057,7 @@
         <div class="pix-info" id="pixInfo">
           <div class="pix-info-title">⚡ Pagamento via Pix</div>
           <div class="pix-qr-wrap">
-            <canvas id="pixQrCanvas"></canvas>
+            <div id="pixQrCanvas"></div>
           </div>
           <div class="pix-valor-label">Valor do pedido</div>
           <div class="pix-valor-destaque" id="pixValorDestaque">R$ 0,00</div>
@@ -1062,6 +1075,9 @@
           </div>
 
           <div class="pix-instrucao">Escaneie o QR Code ou copie o código acima no seu app bancário</div>
+          <div class="pix-comprovante-aviso">
+            📎 Após pagar, envie o comprovante pelo WhatsApp para confirmar seu pedido
+          </div>
         </div>
       </div>
 
@@ -1867,10 +1883,16 @@ function gerarQrPix(total) {
 
   const payload = gerarPixPayload(chave, total, nome, 'SAO PAULO');
 
-  const canvas = document.getElementById('pixQrCanvas');
-  QRCode.toCanvas(canvas, payload, {
-    width: 180, margin: 1,
-    color: { dark: '#1b5e20', light: '#ffffff' }
+  // limpa QR anterior e gera novo
+  const container = document.getElementById('pixQrCanvas');
+  container.innerHTML = '';
+  new QRCode(container, {
+    text: payload,
+    width: 180,
+    height: 180,
+    colorDark: '#1b5e20',
+    colorLight: '#ffffff',
+    correctLevel: QRCode.CorrectLevel.M
   });
 
   document.getElementById('pixValorDestaque').textContent =

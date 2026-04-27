@@ -539,6 +539,22 @@
   }
   .edit-cat-modal h3 { font-family: 'Fredoka One', cursive; font-size: 1.3rem; color: var(--verde); }
 
+  .btn-salvar-tudo {
+    background: var(--verde);
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 0.88rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 3px 10px rgba(58,107,92,0.3);
+  }
+
+  .btn-salvar-tudo:hover { background: var(--verde2); transform: translateY(-1px); }
+
   .btn-edit { background: transparent; color: var(--verde); border: 2px solid var(--verde); }
   .btn-edit:hover { background: rgba(58,107,92,0.08); }
 
@@ -1184,6 +1200,9 @@
     <!-- Config -->
     <div class="admin-card">
       <h3>🏪 Configurações do Estabelecimento</h3>
+      <div style="display:flex;justify-content:flex-end;margin-bottom:12px;">
+        <button class="btn-salvar-tudo" onclick="salvarTudo()">💾 Salvar todas as alterações</button>
+      </div>
       <div class="form-row">
         <div class="form-group grow">
           <label>Nome</label>
@@ -1403,8 +1422,8 @@
 //  CONFIGURAÇÃO SUPABASE — preencha após criar
 //  o projeto em supabase.com
 // ════════════════════════════════════════════════
-const SUPABASE_URL  = 'https://abvocutmjmtnyipxlrwo.supabase.co';
-const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFidm9jdXRtam10bnlpcHhscndvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcyNDcxMDEsImV4cCI6MjA5MjgyMzEwMX0.M7FHqGn1NvriiIIUVC-9mZAX3LCRcarooVEQKXevtYM';
+const SUPABASE_URL  = 'COLE_SUA_URL_AQUI';
+const SUPABASE_KEY  = 'COLE_SUA_ANON_KEY_AQUI';
 const ADMIN_PASSWORD = 'ditinho123'; // troque no primeiro acesso via painel
 // ════════════════════════════════════════════════
 
@@ -1473,6 +1492,7 @@ function logout() {
   document.getElementById('menuPage').classList.add('active');
   document.getElementById('logoutBtn').style.display = 'none';
   window.history.replaceState({}, '', window.location.pathname);
+  renderMenu(); // força re-render do cardápio com dados atualizados
 }
 
 async function changePassword() {
@@ -1798,6 +1818,25 @@ function initCatObserver() {
   });
   document.querySelectorAll('.category-block[id]').forEach(el => catObserver.observe(el));
 }
+async function salvarTudo() {
+  toast('⏳ Salvando...');
+  // Salva configurações
+  const name     = document.getElementById('adminName').value.trim();
+  const subtitle = document.getElementById('adminSubtitle').value.trim();
+  const whatsapp = document.getElementById('adminWhats').value.trim();
+  const pix_key  = document.getElementById('adminPix').value.trim();
+  await sb.from('config').upsert({ id: 1, name, subtitle, whatsapp, pix_key, password: data.config.password || ADMIN_PASSWORD });
+  data.config = { ...data.config, name, subtitle, whatsapp, pix_key };
+  // Salva ordem das categorias
+  await Promise.all(
+    data.categories.map((c, i) =>
+      sb.from('categories').update({ position: i }).eq('id', c.id)
+    )
+  );
+  renderMenu();
+  toast('✅ Tudo salvo com sucesso!');
+}
+
 async function saveConfig() {
   const name     = document.getElementById('adminName').value.trim();
   const subtitle = document.getElementById('adminSubtitle').value.trim();
@@ -1985,7 +2024,7 @@ function onDragOver(e) {
   e.currentTarget.classList.add('drag-over');
 }
 
-function onDrop(e) {
+async function onDrop(e) {
   e.preventDefault();
   const targetId = e.currentTarget.dataset.id;
   if (!dragSrcId || dragSrcId === targetId) return;
@@ -1993,11 +2032,15 @@ function onDrop(e) {
   const tgtIdx = data.categories.findIndex(c => c.id === targetId);
   const [moved] = data.categories.splice(srcIdx, 1);
   data.categories.splice(tgtIdx, 0, moved);
-  // salva nova ordem no Supabase
-  data.categories.forEach((c, i) => {
-    sb.from('categories').update({ position: i }).eq('id', c.id);
-  });
-  renderAdmin(); renderMenu();
+  // salva nova ordem no Supabase aguardando todas as atualizações
+  await Promise.all(
+    data.categories.map((c, i) =>
+      sb.from('categories').update({ position: i }).eq('id', c.id)
+    )
+  );
+  renderAdmin();
+  renderMenu();
+  toast('✅ Ordem salva!');
 }
 
 function onDragEnd(e) {

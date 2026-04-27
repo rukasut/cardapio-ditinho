@@ -196,6 +196,59 @@
   .page.active { display: block; }
 
   /* ── MENU ── */
+  /* ── MENU CATEGORIAS DESLIZANTE ── */
+  .cat-nav {
+    position: sticky;
+    top: 64px; /* altura do header */
+    z-index: 90;
+    background: var(--white);
+    border-bottom: 2px solid var(--creme2);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+    display: none; /* aparece só quando há categorias */
+  }
+
+  .cat-nav.visible { display: block; }
+
+  .cat-nav-inner {
+    display: flex;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    gap: 0;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 12px;
+  }
+
+  .cat-nav-inner::-webkit-scrollbar { display: none; }
+
+  .cat-nav-btn {
+    flex-shrink: 0;
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    padding: 12px 16px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 800;
+    color: var(--muted);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-bottom: -2px;
+  }
+
+  .cat-nav-btn:hover { color: var(--verde); }
+
+  .cat-nav-btn.active {
+    color: var(--verde);
+    border-bottom-color: var(--laranja);
+  }
+
   .menu-body { padding: 16px 20px 100px; max-width: 1100px; margin: 0 auto; }
 
   .category-block { margin-bottom: 32px; }
@@ -676,11 +729,126 @@
   .resumo-item-sub  { font-size: 0.76rem; color: var(--muted); margin-top: 2px; }
   .resumo-item-price { font-family: 'Fredoka One', cursive; font-size: 1rem; color: var(--verde); flex-shrink: 0; }
 
-  .resumo-obs {
+  /* ── PAGAMENTO ── */
+  .pagamento-section {
+    background: var(--white);
+    border-radius: 10px;
+    padding: 14px;
+    margin-top: 8px;
+    border: 2px solid var(--creme2);
+  }
+
+  .pagamento-section label.sec-label {
+    font-size: 0.74rem; font-weight: 800; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.05em;
+    display: block; margin-bottom: 10px;
+  }
+
+  .pagamento-options {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 0;
+  }
+
+  .pag-btn {
+    background: var(--creme);
+    border: 2px solid var(--creme2);
+    border-radius: 10px;
+    padding: 10px 6px;
+    cursor: pointer;
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 800;
+    color: var(--muted);
+    text-align: center;
+    transition: all 0.15s;
+    display: flex; flex-direction: column;
+    align-items: center; gap: 4px;
+  }
+
+  .pag-btn .pag-icon { font-size: 1.3rem; }
+  .pag-btn:hover { border-color: var(--verde); color: var(--verde); }
+  .pag-btn.selected { background: var(--verde); border-color: var(--verde); color: #fff; }
+
+  .troco-section {
+    margin-top: 10px;
+    display: none;
+  }
+
+  .troco-section.show { display: block; }
+
+  .troco-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+
+  .troco-toggle {
+    display: flex; gap: 8px;
+  }
+
+  .troco-opt {
+    flex: 1; padding: 7px; border-radius: 8px;
+    border: 2px solid var(--creme2); background: var(--creme);
+    font-family: 'Nunito', sans-serif; font-weight: 800;
+    font-size: 0.8rem; cursor: pointer; color: var(--muted);
+    transition: all 0.15s; text-align: center;
+  }
+
+  .troco-opt.selected { background: var(--laranja); border-color: var(--laranja); color: #fff; }
+
+  .troco-valor {
+    margin-top: 8px; display: none;
+  }
+
+  .troco-valor.show { display: block; }
+
+  .troco-valor input {
+    width: 100%; background: var(--creme);
+    border: 2px solid var(--creme2); color: var(--text);
+    padding: 8px 12px; border-radius: 8px;
+    font-family: 'Nunito', sans-serif; font-size: 0.9rem;
+  }
+
+  .troco-valor input:focus { outline: none; border-color: var(--verde); }
+
+  .pix-info {
+    margin-top: 10px;
+    background: #e8f5e9;
+    border: 2px solid #a5d6a7;
+    border-radius: 10px;
+    padding: 12px 14px;
+    display: none;
+  }
+
+  .pix-info.show { display: block; }
+  .pix-info p { font-size: 0.8rem; font-weight: 700; color: #2e7d32; margin-bottom: 4px; }
+  .pix-info .pix-key {
+    font-size: 0.9rem; font-weight: 800; color: #1b5e20;
+    word-break: break-all; cursor: pointer;
+    display: flex; align-items: center; gap: 6px;
+  }
+
+  .pix-copy-btn {
+    background: #2e7d32; color: #fff; border: none;
+    padding: 3px 10px; border-radius: 6px;
+    font-size: 0.72rem; font-weight: 800;
+    cursor: pointer; font-family: 'Nunito', sans-serif;
+    white-space: nowrap;
+  }
+
+  .obs-section { margin-top: 8px; }
+
+  /* ── RESUMO OBS ── */
     background: var(--white);
     border-radius: 10px;
     padding: 12px 14px;
     margin-top: 4px;
+    border: 2px solid var(--creme2);
+  }
+
+  .resumo-obs {
+    background: var(--white);
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-top: 8px;
     border: 2px solid var(--creme2);
   }
 
@@ -775,6 +943,12 @@
     <h1>Pastelaria <span>do Ditinho</span></h1>
     <p>Escolha seus pastéis favoritos e peça pelo WhatsApp</p>
   </div>
+
+  <!-- BARRA DE CATEGORIAS DESLIZANTE -->
+  <div class="cat-nav" id="catNav">
+    <div class="cat-nav-inner" id="catNavInner"></div>
+  </div>
+
   <div class="menu-body">
     <div id="menuContent"></div>
   </div>
@@ -798,9 +972,51 @@
     </div>
     <div class="resumo-body">
       <div id="resumoItens"></div>
+
+      <!-- PAGAMENTO -->
+      <div class="pagamento-section">
+        <label class="sec-label">💳 Forma de pagamento</label>
+        <div class="pagamento-options">
+          <button class="pag-btn" onclick="selecionarPag('dinheiro')" id="pag-dinheiro">
+            <span class="pag-icon">💵</span> Dinheiro
+          </button>
+          <button class="pag-btn" onclick="selecionarPag('credito')" id="pag-credito">
+            <span class="pag-icon">💳</span> Crédito
+          </button>
+          <button class="pag-btn" onclick="selecionarPag('debito')" id="pag-debito">
+            <span class="pag-icon">💳</span> Débito
+          </button>
+          <button class="pag-btn" onclick="selecionarPag('pix')" id="pag-pix">
+            <span class="pag-icon">⚡</span> Pix
+          </button>
+        </div>
+
+        <!-- Troco (só aparece no dinheiro) -->
+        <div class="troco-section" id="trocoSection">
+          <label class="sec-label" style="margin-top:10px">Precisa de troco?</label>
+          <div class="troco-toggle">
+            <button class="troco-opt" id="troco-nao" onclick="selecionarTroco(false)">Não preciso</button>
+            <button class="troco-opt" id="troco-sim" onclick="selecionarTroco(true)">Sim, preciso</button>
+          </div>
+          <div class="troco-valor" id="trocoValor">
+            <input type="number" id="trocoInput" placeholder="Troco para R$..." step="0.01" min="0">
+          </div>
+        </div>
+
+        <!-- Pix (mostra chave cadastrada) -->
+        <div class="pix-info" id="pixInfo">
+          <p>Chave Pix do estabelecimento:</p>
+          <div class="pix-key">
+            <span id="pixKeyDisplay">—</span>
+            <button class="pix-copy-btn" onclick="copiarPix()">Copiar</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Observações -->
       <div class="resumo-obs">
-        <label>Observações / pagamento</label>
-        <textarea id="resumoObs" placeholder="Troco para, restrição alimentar, preferências..."></textarea>
+        <label>Observações gerais (opcional)</label>
+        <textarea id="resumoObs" placeholder="Restrição alimentar, preferências..."></textarea>
       </div>
     </div>
     <div class="resumo-footer">
@@ -847,6 +1063,10 @@
         <div class="form-group grow">
           <label>WhatsApp (DDI+DDD+número)</label>
           <input type="text" id="adminWhats" placeholder="5517999999999">
+        </div>
+        <div class="form-group grow">
+          <label>Chave Pix</label>
+          <input type="text" id="adminPix" placeholder="CPF, e-mail, telefone ou chave aleatória">
         </div>
         <button class="btn btn-primary" onclick="saveConfig()">💾 Salvar</button>
       </div>
@@ -1009,8 +1229,8 @@
 //  CONFIGURAÇÃO SUPABASE — preencha após criar
 //  o projeto em supabase.com
 // ════════════════════════════════════════════════
-const SUPABASE_URL  = 'https://abvocutmjmtnyipxlrwo.supabase.co';
-const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFidm9jdXRtam10bnlpcHhscndvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcyNDcxMDEsImV4cCI6MjA5MjgyMzEwMX0.M7FHqGn1NvriiIIUVC-9mZAX3LCRcarooVEQKXevtYM';
+const SUPABASE_URL  = 'COLE_SUA_URL_AQUI';
+const SUPABASE_KEY  = 'COLE_SUA_ANON_KEY_AQUI';
 const ADMIN_PASSWORD = 'ditinho123'; // troque no primeiro acesso via painel
 // ════════════════════════════════════════════════
 
@@ -1178,6 +1398,16 @@ function abrirResumo() {
   }).join('');
   document.getElementById('resumoTotal').textContent = 'R$ ' + total.toFixed(2).replace('.', ',');
   document.getElementById('resumoObs').value = '';
+  // reset pagamento
+  pagamentoSelecionado = '';
+  trocoNecessario = false;
+  ['dinheiro','credito','debito','pix'].forEach(t => document.getElementById('pag-'+t).classList.remove('selected'));
+  document.getElementById('trocoSection').classList.remove('show');
+  document.getElementById('pixInfo').classList.remove('show');
+  document.getElementById('trocoValor').classList.remove('show');
+  document.getElementById('trocoInput').value = '';
+  document.getElementById('troco-sim').classList.remove('selected');
+  document.getElementById('troco-nao').classList.remove('selected');
   document.getElementById('resumoBg').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
@@ -1191,6 +1421,7 @@ function fecharResumo(e) {
 function enviarWhatsApp() {
   const whats = (data.config.whatsapp || '').replace(/\D/g,'');
   if (!whats) { toast('⚠️ WhatsApp não configurado. Fale com o administrador.'); return; }
+  if (!pagamentoSelecionado) { toast('⚠️ Selecione a forma de pagamento'); return; }
   const items = data.items.filter(i => cart[i.id]);
   if (!items.length) return;
   let total = 0;
@@ -1201,8 +1432,9 @@ function enviarWhatsApp() {
     msg += `• ${qty}× ${item.name} — R$ ${sub.toFixed(2).replace('.',',')}\n`;
   });
   msg += `\n*Total: R$ ${total.toFixed(2).replace('.',',')}*`;
+  msg += `\n*Pagamento:* ${getPagamentoTexto()}`;
   const obs = document.getElementById('resumoObs')?.value?.trim();
-  if (obs) msg += `\n\n*Obs:* ${obs}`;
+  if (obs) msg += `\n*Obs:* ${obs}`;
   msg += `\n\n_Pedido pelo cardápio digital_ 📱`;
   window.open(`https://wa.me/${whats}?text=${encodeURIComponent(msg)}`, '_blank');
   cart = {};
@@ -1279,12 +1511,34 @@ function renderMenu() {
     return;
   }
   const cats = data.categories.length ? data.categories : [{ id:'geral', name:'Produtos', icon:'🥟' }];
+
+  // Filtra só cats com itens
+  const catsComItens = cats.filter(cat =>
+    data.items.some(i => i.category_id === cat.id || (!i.category_id && cat.id === 'geral'))
+  );
+
+  // Renderiza barra de navegação
+  const catNav = document.getElementById('catNav');
+  const catNavInner = document.getElementById('catNavInner');
+  if (catNav && catNavInner) {
+    if (catsComItens.length > 1) {
+      catNav.classList.add('visible');
+      catNavInner.innerHTML = catsComItens.map((cat, i) =>
+        `<button class="cat-nav-btn${i===0?' active':''}" id="navbtn-${cat.id}" onclick="scrollToCategory('${cat.id}')">
+          ${cat.icon} ${cat.name}
+        </button>`
+      ).join('');
+    } else {
+      catNav.classList.remove('visible');
+    }
+  }
+
   contentEl.innerHTML = cats.map(cat => {
     const catItems = data.items
       .filter(i => i.category_id === cat.id || (!i.category_id && cat.id === 'geral'))
       .sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
     if (!catItems.length) return '';
-    return `<div class="category-block">
+    return `<div class="category-block" id="cat-${cat.id}">
       <div class="cat-label">${cat.icon} ${cat.name}</div>
       <div class="items-grid">
         ${catItems.map(item => {
@@ -1308,15 +1562,60 @@ function renderMenu() {
       </div>
     </div>`;
   }).join('');
+
+  // Inicia observer de scroll após renderizar
+  setTimeout(initCatObserver, 100);
 }
 
-// ── ADMIN ──
+// ── NAVEGAÇÃO POR CATEGORIAS ──
+let catObserver = null;
+
+function scrollToCategory(catId) {
+  const el = document.getElementById('cat-' + catId);
+  if (!el) return;
+  const navHeight = 64 + (document.getElementById('catNav')?.offsetHeight || 0);
+  const top = el.getBoundingClientRect().top + window.scrollY - navHeight - 8;
+  window.scrollTo({ top, behavior: 'smooth' });
+}
+
+function setActiveNavBtn(catId) {
+  document.querySelectorAll('.cat-nav-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById('navbtn-' + catId);
+  if (!btn) return;
+  btn.classList.add('active');
+  // centraliza o botão ativo na barra
+  const inner = document.getElementById('catNavInner');
+  if (inner) {
+    const btnLeft = btn.offsetLeft;
+    const btnW    = btn.offsetWidth;
+    const innerW  = inner.offsetWidth;
+    inner.scrollTo({ left: btnLeft - innerW / 2 + btnW / 2, behavior: 'smooth' });
+  }
+}
+
+function initCatObserver() {
+  if (catObserver) catObserver.disconnect();
+  const navHeight = 64 + (document.getElementById('catNav')?.offsetHeight || 56);
+  catObserver = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const id = entry.target.id.replace('cat-', '');
+        setActiveNavBtn(id);
+      }
+    });
+  }, {
+    rootMargin: `-${navHeight + 4}px 0px -60% 0px`,
+    threshold: 0
+  });
+  document.querySelectorAll('.category-block[id]').forEach(el => catObserver.observe(el));
+}
 async function saveConfig() {
   const name     = document.getElementById('adminName').value.trim();
   const subtitle = document.getElementById('adminSubtitle').value.trim();
   const whatsapp = document.getElementById('adminWhats').value.trim();
-  await sb.from('config').upsert({ id: 1, name, subtitle, whatsapp, password: data.config.password || ADMIN_PASSWORD });
-  data.config = { ...data.config, name, subtitle, whatsapp };
+  const pix_key  = document.getElementById('adminPix').value.trim();
+  await sb.from('config').upsert({ id: 1, name, subtitle, whatsapp, pix_key, password: data.config.password || ADMIN_PASSWORD });
+  data.config = { ...data.config, name, subtitle, whatsapp, pix_key };
   renderMenu();
   toast('✅ Configurações salvas!');
 }
@@ -1379,6 +1678,7 @@ function renderAdmin() {
   document.getElementById('adminName').value     = cfg.name     || '';
   document.getElementById('adminSubtitle').value = cfg.subtitle || '';
   document.getElementById('adminWhats').value    = cfg.whatsapp || '';
+  document.getElementById('adminPix').value      = cfg.pix_key  || '';
 
   document.getElementById('categoryList').innerHTML = data.categories.length
     ? data.categories.map(c => `
@@ -1411,6 +1711,56 @@ function renderAdmin() {
         </div>`;
       }).join('')
     : '<p style="color:var(--muted);font-size:0.8rem;padding:6px 0">Nenhum produto cadastrado</p>';
+}
+
+// ── PAGAMENTO ──
+let pagamentoSelecionado = '';
+let trocoNecessario = false;
+
+function selecionarPag(tipo) {
+  pagamentoSelecionado = tipo;
+  ['dinheiro','credito','debito','pix'].forEach(t => {
+    document.getElementById('pag-' + t).classList.toggle('selected', t === tipo);
+  });
+  document.getElementById('trocoSection').classList.toggle('show', tipo === 'dinheiro');
+  const pixInfo = document.getElementById('pixInfo');
+  if (tipo === 'pix') {
+    const chave = data.config.pix_key || '';
+    document.getElementById('pixKeyDisplay').textContent = chave || 'Não cadastrada';
+    pixInfo.classList.add('show');
+  } else {
+    pixInfo.classList.remove('show');
+  }
+  if (tipo !== 'dinheiro') {
+    trocoNecessario = false;
+    document.getElementById('troco-sim').classList.remove('selected');
+    document.getElementById('troco-nao').classList.remove('selected');
+    document.getElementById('trocoValor').classList.remove('show');
+  }
+}
+
+function selecionarTroco(sim) {
+  trocoNecessario = sim;
+  document.getElementById('troco-sim').classList.toggle('selected', sim);
+  document.getElementById('troco-nao').classList.toggle('selected', !sim);
+  document.getElementById('trocoValor').classList.toggle('show', sim);
+}
+
+function copiarPix() {
+  const chave = data.config.pix_key || '';
+  if (!chave) { toast('⚠️ Chave Pix não cadastrada'); return; }
+  navigator.clipboard.writeText(chave).then(() => toast('✅ Chave Pix copiada!'));
+}
+
+function getPagamentoTexto() {
+  const labels = { dinheiro: 'Dinheiro 💵', credito: 'Cartão de Crédito 💳', debito: 'Cartão de Débito 💳', pix: 'Pix ⚡' };
+  if (!pagamentoSelecionado) return '';
+  let txt = labels[pagamentoSelecionado] || pagamentoSelecionado;
+  if (pagamentoSelecionado === 'dinheiro' && trocoNecessario) {
+    const val = document.getElementById('trocoInput').value;
+    txt += val ? ` — troco para R$ ${parseFloat(val).toFixed(2).replace('.',',')}` : ' — precisa de troco';
+  }
+  return txt;
 }
 
 // ── EDITAR PRODUTO ──

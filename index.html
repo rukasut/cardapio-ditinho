@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Pastelaria do Ditinho</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -836,7 +836,7 @@
     box-shadow: 0 2px 8px rgba(0,0,0,0.08);
   }
 
-  .pix-qr-wrap canvas { display: block; }
+  .pix-qr-wrap canvas, .pix-qr-wrap img { display: block; margin: 0 auto; }
 
   .pix-valor-label {
     font-size: 0.78rem; color: #388e3c; font-weight: 700; margin-bottom: 4px;
@@ -1044,7 +1044,7 @@
         <div class="pix-info" id="pixInfo">
           <div class="pix-info-title">⚡ Pagamento via Pix</div>
           <div class="pix-qr-wrap">
-            <canvas id="pixQrCanvas"></canvas>
+            <div id="pixQrCanvas"></div>
           </div>
           <div class="pix-valor-label">Valor do pedido</div>
           <div class="pix-valor-destaque" id="pixValorDestaque">R$ 0,00</div>
@@ -1290,8 +1290,8 @@
 //  CONFIGURAÇÃO SUPABASE — preencha após criar
 //  o projeto em supabase.com
 // ════════════════════════════════════════════════
-const SUPABASE_URL  = 'https://abvocutmjmtnyipxlrwo.supabase.co';
-const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFidm9jdXRtam10bnlpcHhscndvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcyNDcxMDEsImV4cCI6MjA5MjgyMzEwMX0.M7FHqGn1NvriiIIUVC-9mZAX3LCRcarooVEQKXevtYM';
+const SUPABASE_URL  = 'COLE_SUA_URL_AQUI';
+const SUPABASE_KEY  = 'COLE_SUA_ANON_KEY_AQUI';
 const ADMIN_PASSWORD = 'ditinho123'; // troque no primeiro acesso via painel
 // ════════════════════════════════════════════════
 
@@ -1867,10 +1867,16 @@ function gerarQrPix(total) {
 
   const payload = gerarPixPayload(chave, total, nome, 'SAO PAULO');
 
-  const canvas = document.getElementById('pixQrCanvas');
-  QRCode.toCanvas(canvas, payload, {
-    width: 180, margin: 1,
-    color: { dark: '#1b5e20', light: '#ffffff' }
+  // limpa QR anterior e gera novo
+  const container = document.getElementById('pixQrCanvas');
+  container.innerHTML = '';
+  new QRCode(container, {
+    text: payload,
+    width: 180,
+    height: 180,
+    colorDark: '#1b5e20',
+    colorLight: '#ffffff',
+    correctLevel: QRCode.CorrectLevel.M
   });
 
   document.getElementById('pixValorDestaque').textContent =

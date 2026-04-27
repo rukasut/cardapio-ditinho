@@ -472,6 +472,73 @@
   .checkout-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
   .empty-cart { text-align: center; padding: 40px 20px; color: var(--muted); }
 
+  /* ── DRAG AND DROP CATEGORIAS ── */
+  .cat-drag-item {
+    background: var(--creme);
+    border: 2px solid var(--creme2);
+    border-radius: 10px;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: grab;
+    transition: box-shadow 0.15s, opacity 0.15s;
+    margin-bottom: 6px;
+    user-select: none;
+  }
+
+  .cat-drag-item:active { cursor: grabbing; }
+  .cat-drag-item.dragging { opacity: 0.4; box-shadow: 0 4px 16px rgba(0,0,0,0.15); }
+  .cat-drag-item.drag-over { border-color: var(--verde); background: #e8f5f0; }
+
+  .drag-handle {
+    color: var(--muted);
+    font-size: 1rem;
+    cursor: grab;
+    padding: 0 2px;
+    flex-shrink: 0;
+  }
+
+  /* ── AGRUPAMENTO PRODUTOS POR CATEGORIA ── */
+  .item-group { margin-bottom: 20px; }
+
+  .item-group-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: var(--verde);
+    border-radius: 8px;
+    margin-bottom: 8px;
+    color: #fff;
+    font-weight: 800;
+    font-size: 0.82rem;
+  }
+
+  .item-group-count {
+    background: rgba(255,255,255,0.2);
+    padding: 1px 8px;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    margin-left: auto;
+  }
+
+  /* ── MODAL EDITAR CATEGORIA ── */
+  .edit-cat-modal-bg {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.65);
+    z-index: 600; display: none;
+    align-items: center; justify-content: center;
+  }
+  .edit-cat-modal-bg.open { display: flex; }
+  .edit-cat-modal {
+    background: var(--white); border-radius: 18px;
+    padding: 28px; width: min(420px, 95vw);
+    display: flex; flex-direction: column; gap: 14px;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.25);
+  }
+  .edit-cat-modal h3 { font-family: 'Fredoka One', cursive; font-size: 1.3rem; color: var(--verde); }
+
   .btn-edit { background: transparent; color: var(--verde); border: 2px solid var(--verde); }
   .btn-edit:hover { background: rgba(58,107,92,0.08); }
 
@@ -1219,6 +1286,36 @@
   </div>
 </div>
 
+<!-- MODAL EDITAR CATEGORIA -->
+<div class="edit-cat-modal-bg" id="editCatModalBg" onclick="fecharEditCatModal(event)">
+  <div class="edit-cat-modal" onclick="event.stopPropagation()">
+    <h3>✏️ Editar Categoria</h3>
+    <input type="hidden" id="editCatId">
+    <div class="form-row">
+      <div class="form-group grow">
+        <label>Nome</label>
+        <input type="text" id="editCatName" placeholder="Nome da categoria">
+      </div>
+      <div class="form-group">
+        <label>Emoji</label>
+        <input type="text" id="editCatIcon" placeholder="🥟" style="width:68px;text-align:center">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Novo ícone personalizado (opcional)</label>
+      <label class="img-upload-label">
+        <input type="file" id="editCatImg" accept="image/*" onchange="previewEditCatImg(this)">
+        🖼️ Selecionar imagem
+        <img id="editCatImgPreview" class="img-preview-sm" alt="">
+      </label>
+    </div>
+    <div class="edit-modal-footer">
+      <button class="btn-full btn-ghost" onclick="fecharEditCatModal()">Cancelar</button>
+      <button class="btn-full btn-verde" onclick="salvarEdicaoCategoria()">💾 Salvar</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL EDITAR PRODUTO -->
 <div class="edit-modal-bg" id="editModalBg" onclick="fecharEditModal(event)">
   <div class="edit-modal" onclick="event.stopPropagation()">
@@ -1306,8 +1403,8 @@
 //  CONFIGURAÇÃO SUPABASE — preencha após criar
 //  o projeto em supabase.com
 // ════════════════════════════════════════════════
-const SUPABASE_URL  = 'https://abvocutmjmtnyipxlrwo.supabase.co';
-const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFidm9jdXRtam10bnlpcHhscndvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcyNDcxMDEsImV4cCI6MjA5MjgyMzEwMX0.M7FHqGn1NvriiIIUVC-9mZAX3LCRcarooVEQKXevtYM';
+const SUPABASE_URL  = 'COLE_SUA_URL_AQUI';
+const SUPABASE_KEY  = 'COLE_SUA_ANON_KEY_AQUI';
 const ADMIN_PASSWORD = 'ditinho123'; // troque no primeiro acesso via painel
 // ════════════════════════════════════════════════
 
@@ -1798,42 +1895,175 @@ function renderAdmin() {
   document.getElementById('adminWhats').value    = cfg.whatsapp || '';
   document.getElementById('adminPix').value      = cfg.pix_key  || '';
 
-  document.getElementById('categoryList').innerHTML = data.categories.length
-    ? data.categories.map(c => `
-      <div class="admin-list-item">
-        <div class="admin-thumb" style="background:var(--creme2);display:flex;align-items:center;justify-content:center;font-size:1.3rem;">
+  // ── CATEGORIAS com drag-and-drop ──
+  const catListEl = document.getElementById('categoryList');
+  if (data.categories.length) {
+    catListEl.innerHTML = data.categories.map(c => `
+      <div class="cat-drag-item" draggable="true" data-id="${c.id}"
+           ondragstart="onDragStart(event)" ondragover="onDragOver(event)"
+           ondrop="onDrop(event)" ondragend="onDragEnd(event)">
+        <span class="drag-handle">⠿</span>
+        <div class="admin-thumb" style="background:var(--creme2);display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;">
           ${c.icon_url ? `<img src="${c.icon_url}" style="width:100%;height:100%;object-fit:contain;padding:4px;">` : c.icon}
         </div>
         <div class="admin-item-info">
           <div class="admin-item-name">${c.name}</div>
           <div class="admin-item-sub">${data.items.filter(i=>i.category_id===c.id).length} produtos</div>
         </div>
+        <button class="btn btn-edit" onclick="abrirEditCatModal('${c.id}')">✏️</button>
         <button class="btn btn-danger" onclick="removeCategory('${c.id}')">Remover</button>
-      </div>`).join('')
-    : '<p style="color:var(--muted);font-size:0.8rem;padding:6px 0">Nenhuma categoria</p>';
+      </div>`).join('');
+  } else {
+    catListEl.innerHTML = '<p style="color:var(--muted);font-size:0.8rem;padding:6px 0">Nenhuma categoria</p>';
+  }
 
+  // ── SELECT de categoria para novo produto ──
   document.getElementById('newItemCategory').innerHTML = data.categories.map(c =>
     `<option value="${c.id}">${c.icon_url ? '' : c.icon} ${c.name}</option>`).join('');
 
-  document.getElementById('itemList').innerHTML = data.items.length
-    ? data.items.map(item => {
-        const cat = data.categories.find(c => c.id === item.category_id);
-        const emoji = cat ? (cat.icon_url ? `<img src="${cat.icon_url}" style="width:16px;height:16px;object-fit:contain;vertical-align:middle;">` : cat.icon) : '🥟';
-        return `<div class="admin-list-item">
-          <div class="admin-thumb">${imgEl(item.img_url, emoji, 'thumb')}</div>
-          <div class="admin-item-info">
-            <div class="admin-item-name">${item.name}</div>
-            <div class="admin-item-sub">R$ ${Number(item.price).toFixed(2).replace('.',',')}${item.description?' · '+item.description:''}</div>
-          </div>
-          ${cat?`<span class="tag">${cat.icon_url ? `<img src="${cat.icon_url}" style="width:12px;height:12px;object-fit:contain;vertical-align:middle;">` : cat.icon} ${cat.name}</span>`:''}
-          <button class="btn btn-edit" onclick="abrirEditModal('${item.id}')">✏️</button>
-          <button class="btn btn-danger" onclick="removeItem('${item.id}')">Remover</button>
-        </div>`;
-      }).join('')
-    : '<p style="color:var(--muted);font-size:0.8rem;padding:6px 0">Nenhum produto cadastrado</p>';
+  // ── PRODUTOS agrupados por categoria ──
+  const itemListEl = document.getElementById('itemList');
+  if (!data.items.length) {
+    itemListEl.innerHTML = '<p style="color:var(--muted);font-size:0.8rem;padding:6px 0">Nenhum produto cadastrado</p>';
+    return;
+  }
+
+  // Agrupa itens por categoria
+  const semCategoria = data.items.filter(i => !i.category_id || !data.categories.find(c => c.id === i.category_id));
+  const grupos = [
+    ...data.categories.map(cat => ({
+      cat,
+      items: data.items.filter(i => i.category_id === cat.id).sort((a,b) => a.name.localeCompare(b.name,'pt-BR'))
+    })).filter(g => g.items.length),
+    ...(semCategoria.length ? [{ cat: null, items: semCategoria }] : [])
+  ];
+
+  itemListEl.innerHTML = grupos.map(({ cat, items }) => {
+    const headerIcon = cat
+      ? (cat.icon_url ? `<img src="${cat.icon_url}" style="width:18px;height:18px;object-fit:contain;vertical-align:middle;">` : cat.icon)
+      : '📦';
+    const headerName = cat ? cat.name : 'Sem categoria';
+
+    const itemsHtml = items.map(item => {
+      const emoji = cat ? (cat.icon_url
+        ? `<img src="${cat.icon_url}" style="width:16px;height:16px;object-fit:contain;vertical-align:middle;">`
+        : cat.icon) : '🥟';
+      return `<div class="admin-list-item">
+        <div class="admin-thumb">${imgEl(item.img_url, emoji, 'thumb')}</div>
+        <div class="admin-item-info">
+          <div class="admin-item-name">${item.name}</div>
+          <div class="admin-item-sub">R$ ${Number(item.price).toFixed(2).replace('.',',')}${item.description?' · '+item.description:''}</div>
+        </div>
+        <button class="btn btn-edit" onclick="abrirEditModal('${item.id}')">✏️</button>
+        <button class="btn btn-danger" onclick="removeItem('${item.id}')">Remover</button>
+      </div>`;
+    }).join('');
+
+    return `<div class="item-group">
+      <div class="item-group-header">
+        ${headerIcon} ${headerName}
+        <span class="item-group-count">${items.length} produto${items.length>1?'s':''}</span>
+      </div>
+      ${itemsHtml}
+    </div>`;
+  }).join('');
 }
 
-// ── PAGAMENTO ──
+// ── DRAG AND DROP CATEGORIAS ──
+let dragSrcId = null;
+
+function onDragStart(e) {
+  dragSrcId = e.currentTarget.dataset.id;
+  e.currentTarget.classList.add('dragging');
+  e.dataTransfer.effectAllowed = 'move';
+}
+
+function onDragOver(e) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  document.querySelectorAll('.cat-drag-item').forEach(el => el.classList.remove('drag-over'));
+  e.currentTarget.classList.add('drag-over');
+}
+
+function onDrop(e) {
+  e.preventDefault();
+  const targetId = e.currentTarget.dataset.id;
+  if (!dragSrcId || dragSrcId === targetId) return;
+  const srcIdx = data.categories.findIndex(c => c.id === dragSrcId);
+  const tgtIdx = data.categories.findIndex(c => c.id === targetId);
+  const [moved] = data.categories.splice(srcIdx, 1);
+  data.categories.splice(tgtIdx, 0, moved);
+  // salva nova ordem no Supabase
+  data.categories.forEach((c, i) => {
+    sb.from('categories').update({ position: i }).eq('id', c.id);
+  });
+  renderAdmin(); renderMenu();
+}
+
+function onDragEnd(e) {
+  e.currentTarget.classList.remove('dragging');
+  document.querySelectorAll('.cat-drag-item').forEach(el => el.classList.remove('drag-over'));
+}
+
+// ── EDITAR CATEGORIA ──
+function abrirEditCatModal(id) {
+  const cat = data.categories.find(c => c.id === id);
+  if (!cat) return;
+  document.getElementById('editCatId').value   = cat.id;
+  document.getElementById('editCatName').value = cat.name;
+  document.getElementById('editCatIcon').value = cat.icon || '';
+  document.getElementById('editCatImg').value  = '';
+  document.getElementById('editCatImgPreview').style.display = 'none';
+  document.getElementById('editCatModalBg').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function fecharEditCatModal(e) {
+  if (e && e.target !== document.getElementById('editCatModalBg')) return;
+  document.getElementById('editCatModalBg').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function previewEditCatImg(input) {
+  if (!input.files || !input.files[0]) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const preview = document.getElementById('editCatImgPreview');
+    preview.src = e.target.result;
+    preview.style.display = 'block';
+  };
+  reader.readAsDataURL(input.files[0]);
+}
+
+async function salvarEdicaoCategoria() {
+  const id      = document.getElementById('editCatId').value;
+  const name    = document.getElementById('editCatName').value.trim();
+  const icon    = document.getElementById('editCatIcon').value.trim() || '🥟';
+  const imgFile = document.getElementById('editCatImg').files[0];
+  if (!name) { toast('⚠️ Digite o nome'); return; }
+  toast('⏳ Salvando...');
+  const cat = data.categories.find(c => c.id === id);
+  let icon_url = cat?.icon_url || '';
+  if (imgFile) {
+    const ext  = imgFile.name.split('.').pop();
+    const path = `cat-${Date.now()}.${ext}`;
+    const { error: upErr } = await sb.storage.from('product-images').upload(path, imgFile, { upsert: true });
+    if (!upErr) {
+      const { data: urlData } = sb.storage.from('product-images').getPublicUrl(path);
+      icon_url = urlData.publicUrl;
+    }
+  }
+  const { error } = await sb.from('categories').update({ name, icon, icon_url }).eq('id', id);
+  if (error) { toast('❌ Erro ao salvar'); return; }
+  const idx = data.categories.findIndex(c => c.id === id);
+  if (idx !== -1) data.categories[idx] = { ...data.categories[idx], name, icon, icon_url };
+  document.getElementById('editCatModalBg').classList.remove('open');
+  document.body.style.overflow = '';
+  renderAdmin(); renderMenu();
+  toast('✅ Categoria atualizada!');
+}
+
+// ── DRAG AND DROP ──
 let pagamentoSelecionado = '';
 let trocoNecessario = false;
 

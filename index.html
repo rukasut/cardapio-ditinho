@@ -703,6 +703,42 @@
     flex-shrink: 0;
   }
 
+  /* ── BUSCA ── */
+  .search-bar-wrap {
+    padding: 10px 20px 0;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .search-bar {
+    width: 100%;
+    background: var(--white);
+    border: 2px solid var(--creme2);
+    border-radius: 12px;
+    padding: 10px 16px 10px 40px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.9rem;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.2s;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%237a756c' stroke-width='2.5'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: 14px center;
+  }
+
+  .search-bar:focus { border-color: var(--verde); }
+  .search-bar::placeholder { color: var(--muted); }
+  .search-empty { text-align: center; padding: 40px 20px; color: var(--muted); }
+
+  /* ── DRAG VARIAÇÕES ── */
+  .var-admin-item { cursor: grab; }
+  .var-admin-item:active { cursor: grabbing; }
+  .var-admin-item.dragging { opacity: 0.4; }
+  .var-admin-item.drag-over-var { border-color: var(--verde); background: #e8f5f0; }
+  .var-drag-handle { color: var(--muted); font-size: 0.9rem; padding-right: 2px; flex-shrink: 0; }
+
+  /* ── TOGGLE ── */
   .toggle-switch {
     position: relative;
     width: 36px;
@@ -1304,6 +1340,13 @@
     <div class="cat-nav-inner" id="catNavInner"></div>
   </div>
 
+  <!-- BUSCA -->
+  <div class="search-bar-wrap">
+    <input type="text" class="search-bar" id="searchBar"
+      placeholder="🔍 Buscar produto..."
+      oninput="filtrarProdutos(this.value)">
+  </div>
+
   <div class="menu-body">
     <div id="menuContent"></div>
   </div>
@@ -1679,8 +1722,8 @@
 //  CONFIGURAÇÃO SUPABASE — preencha após criar
 //  o projeto em supabase.com
 // ════════════════════════════════════════════════
-const SUPABASE_URL  = 'https://abvocutmjmtnyipxlrwo.supabase.co';
-const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFidm9jdXRtam10bnlpcHhscndvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcyNDcxMDEsImV4cCI6MjA5MjgyMzEwMX0.M7FHqGn1NvriiIIUVC-9mZAX3LCRcarooVEQKXevtYM';
+const SUPABASE_URL  = 'COLE_SUA_URL_AQUI';
+const SUPABASE_KEY  = 'COLE_SUA_ANON_KEY_AQUI';
 const ADMIN_PASSWORD = 'ditinho123'; // troque no primeiro acesso via painel
 // ════════════════════════════════════════════════
 
@@ -2003,6 +2046,47 @@ function renderMenu() {
     contentEl.innerHTML = `<div class="empty-menu"><div class="icon">🥟</div><p style="font-weight:700">Cardápio em atualização.<br>Volte em breve!</p></div>`;
     return;
   }
+  // Se há busca ativa, mostra resultado flat sem categorias
+  if (searchQuery) {
+    const filtered = data.items.filter(i =>
+      i.active !== false &&
+      (i.name.toLowerCase().includes(searchQuery) || (i.description||'').toLowerCase().includes(searchQuery))
+    );
+    if (!filtered.length) {
+      contentEl.innerHTML = `<div class="search-empty"><div style="font-size:2.5rem;margin-bottom:8px">🔍</div><p style="font-weight:700">Nenhum produto encontrado para "<em>${searchQuery}</em>"</p></div>`;
+      return;
+    }
+    contentEl.innerHTML = `<div class="category-block"><div class="items-grid">
+      ${filtered.map(item => {
+        const qty = getQty(item.id);
+        const cat = data.categories.find(c => c.id === item.category_id);
+        const itemVars = (data.variations || []).filter(v => v.item_id === item.id && v.active !== false);
+        const hasVars = itemVars.length > 0;
+        const catFallback = cat?.icon_url ? `<img src="${cat.icon_url}" alt="" style="width:48px;height:48px;object-fit:contain;">` : (cat?.icon || '🥟');
+        return `<div class="item-card" ${hasVars ? `onclick="abrirVarModal('${item.id}')" style="cursor:pointer"` : ''}>
+          <div class="item-img">${imgEl(item.img_url, catFallback, 'card')}</div>
+          <div class="item-body">
+            <div class="item-name">${item.name}</div>
+            ${item.description ? `<div class="item-desc">${item.description}</div>` : ''}
+            ${hasVars ? `<span class="item-has-variations">🔀 ${itemVars.length} opções</span>` : ''}
+          </div>
+          <div class="item-footer">
+            <div class="item-price">R$ ${Number(item.price).toFixed(2).replace('.',',')}</div>
+            ${hasVars
+              ? `<button class="qty-btn" onclick="event.stopPropagation();abrirVarModal('${item.id}')" style="width:auto;padding:0 12px;font-size:0.8rem;font-weight:800;">Escolher</button>`
+              : `<div class="qty-control">
+                  <button class="qty-btn" onclick="removeFromCart('${item.id}')">−</button>
+                  <span class="qty-display">${qty}</span>
+                  <button class="qty-btn" onclick="addToCart('${item.id}')">+</button>
+                </div>`
+            }
+          </div>
+        </div>`;
+      }).join('')}
+    </div></div>`;
+    return;
+  }
+
   const cats = data.categories.length ? data.categories : [{ id:'geral', name:'Produtos', icon:'🥟' }];
 
   // Filtra só cats com itens
@@ -2321,7 +2405,58 @@ function renderAdmin() {
   }).join('');
 }
 
-// ── DRAG AND DROP ITENS ──
+// ── DRAG VARIAÇÕES ──
+let dragVarSrcId = null;
+
+function onVarDragStart(e) {
+  dragVarSrcId = e.currentTarget.dataset.varid;
+  e.currentTarget.classList.add('dragging');
+  e.dataTransfer.effectAllowed = 'move';
+  e.stopPropagation();
+}
+
+function onVarDragOver(e) {
+  e.preventDefault(); e.stopPropagation();
+  document.querySelectorAll('.var-admin-item').forEach(el => el.classList.remove('drag-over-var'));
+  e.currentTarget.classList.add('drag-over-var');
+}
+
+async function onVarDrop(e) {
+  e.preventDefault(); e.stopPropagation();
+  const targetId = e.currentTarget.dataset.varid;
+  const itemId   = e.currentTarget.dataset.itemid;
+  if (!dragVarSrcId || dragVarSrcId === targetId) return;
+  const vars = data.variations.filter(v => v.item_id === itemId).sort((a,b) => (a.position||0)-(b.position||0));
+  const srcIdx = vars.findIndex(v => v.id === dragVarSrcId);
+  const tgtIdx = vars.findIndex(v => v.id === targetId);
+  const [moved] = vars.splice(srcIdx, 1);
+  vars.splice(tgtIdx, 0, moved);
+  await Promise.all(vars.map((v, i) => {
+    v.position = i;
+    return sb.from('variations').update({ position: i }).eq('id', v.id);
+  }));
+  renderVarAdminList(itemId);
+  renderMenu();
+  toast('✅ Ordem salva!');
+}
+
+function onVarDragEnd(e) {
+  e.currentTarget.classList.remove('dragging');
+  document.querySelectorAll('.var-admin-item').forEach(el => el.classList.remove('drag-over-var'));
+}
+
+// ── BUSCA ──
+let searchQuery = '';
+
+function filtrarProdutos(q) {
+  searchQuery = q.toLowerCase().trim();
+  renderMenu();
+  // Esconde barra de categorias durante busca
+  const catNav = document.getElementById('catNav');
+  if (catNav) catNav.style.display = searchQuery ? 'none' : '';
+}
+
+// ── DRAG VARIAÇÕES ──
 let dragItemSrcId = null;
 
 function onItemDragStart(e) {
@@ -2662,7 +2797,11 @@ function renderVarAdminList(itemId) {
   const el = document.getElementById('varAdminList');
   if (!vars.length) { el.innerHTML = '<p style="color:var(--muted);font-size:0.78rem;padding:4px 0">Nenhuma variação ainda</p>'; return; }
   el.innerHTML = vars.map(v => `
-    <div class="var-admin-item${v.active === false ? ' inativo' : ''}">
+    <div class="var-admin-item${v.active === false ? ' inativo' : ''}"
+      draggable="true" data-varid="${v.id}" data-itemid="${itemId}"
+      ondragstart="onVarDragStart(event)" ondragover="onVarDragOver(event)"
+      ondrop="onVarDrop(event)" ondragend="onVarDragEnd(event)">
+      <span class="var-drag-handle">⠿</span>
       <span class="var-admin-item-name">${v.name}</span>
       <span class="var-admin-item-price">R$ ${Number(v.price).toFixed(2).replace('.',',')}</span>
       <label class="toggle-switch" style="transform:scale(0.85)" title="${v.active === false ? 'Oculto' : 'Visível'}">

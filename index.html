@@ -594,33 +594,42 @@
     border-radius: 12px;
     padding: 12px 16px;
     display: flex; align-items: center; gap: 12px;
-    cursor: pointer;
-    transition: all 0.15s;
+    transition: border-color 0.15s;
+    user-select: none;
   }
 
   .var-option:hover { border-color: var(--verde); }
-  .var-option.selected { border-color: var(--verde); background: #e8f5f0; }
-
-  .var-option-radio {
-    width: 20px; height: 20px; border-radius: 50%;
-    border: 2px solid var(--creme2);
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0; transition: all 0.15s;
-  }
-
-  .var-option.selected .var-option-radio {
-    border-color: var(--verde);
-    background: var(--verde);
-  }
-
-  .var-option.selected .var-option-radio::after {
-    content: '';
-    width: 8px; height: 8px;
-    background: #fff; border-radius: 50%;
-  }
+  .var-option.has-qty { border-color: var(--verde); background: #e8f5f0; }
 
   .var-option-name { flex: 1; font-weight: 700; font-size: 0.9rem; }
   .var-option-price { font-family: 'Fredoka One', cursive; font-size: 1rem; color: var(--verde); }
+
+  .var-qty-control { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+
+  .var-qty-btn {
+    background: var(--creme);
+    border: 2px solid var(--creme2);
+    color: var(--verde);
+    width: 28px; height: 28px;
+    border-radius: 8px;
+    cursor: pointer; font-size: 1rem; font-weight: 900;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+  }
+
+  .var-qty-btn:hover { background: var(--laranja); border-color: var(--laranja); color: #fff; }
+  .var-qty-display { font-weight: 900; font-size: 0.95rem; min-width: 20px; text-align: center; }
+
+  .var-modal-subtotal {
+    text-align: center;
+    font-family: 'Fredoka One', cursive;
+    font-size: 1rem;
+    color: var(--muted);
+    margin-bottom: 10px;
+    transition: color 0.2s;
+  }
+
+  .var-modal-subtotal.has-items { color: var(--verde); }
 
   .var-modal-footer {
     padding: 14px 20px 20px;
@@ -1322,7 +1331,7 @@
   <div class="header-right">
     <button class="admin-logout" id="logoutBtn" onclick="logout()">Sair do Admin</button>
     <button class="cart-btn" onclick="toggleCart()">
-      🛒 Carrinho <span class="cart-count" id="cartCount">0</span>
+      🛒 <span id="cartTotalHeader" style="display:none"> R$ <span id="cartTotalValue">0,00</span> ·</span> <span class="cart-count" id="cartCount">0</span>
     </button>
   </div>
 </header>
@@ -1378,11 +1387,8 @@
           <button class="pag-btn" onclick="selecionarPag('dinheiro')" id="pag-dinheiro">
             <span class="pag-icon">💵</span> Dinheiro
           </button>
-          <button class="pag-btn" onclick="selecionarPag('credito')" id="pag-credito">
-            <span class="pag-icon">💳</span> Crédito
-          </button>
-          <button class="pag-btn" onclick="selecionarPag('debito')" id="pag-debito">
-            <span class="pag-icon">💳</span> Débito
+          <button class="pag-btn" onclick="selecionarPag('cartao')" id="pag-cartao">
+            <span class="pag-icon">💳</span> Cartão
           </button>
           <button class="pag-btn" onclick="selecionarPag('pix')" id="pag-pix">
             <span class="pag-icon">⚡</span> Pix
@@ -1675,12 +1681,13 @@
       <button class="close-btn" onclick="fecharVarModal()">✕</button>
     </div>
     <div class="var-modal-body">
-      <span class="var-label">Escolha uma opção</span>
+      <span class="var-label">Escolha as opções e quantidades</span>
       <div class="var-options" id="varOptions"></div>
     </div>
     <div class="var-modal-footer">
+      <div class="var-modal-subtotal" id="varModalSubtotal">Nenhum item selecionado</div>
       <button class="var-add-btn" id="varAddBtn" onclick="adicionarVariacao()" disabled>
-        Selecione uma opção
+        Adicionar ao carrinho
       </button>
     </div>
   </div>
@@ -1891,7 +1898,16 @@ function updateCartUI() {
     .filter(([k]) => k !== '__meta')
     .reduce((a, [, v]) => a + v, 0);
   document.getElementById('cartCount').textContent = count;
+
+  // Total em tempo real no header
   const total = getCartTotal();
+  const totalHeader = document.getElementById('cartTotalHeader');
+  const totalValue  = document.getElementById('cartTotalValue');
+  if (totalHeader && totalValue) {
+    totalHeader.style.display = count > 0 ? 'inline' : 'none';
+    totalValue.textContent = total.toFixed(2).replace('.', ',');
+  }
+
   const btn = document.getElementById('finalizarBtnBig');
   const btnTotal = document.getElementById('finalizarBtnTotal');
   if (btn) {
@@ -1953,7 +1969,7 @@ function abrirResumo() {
   // reset pagamento
   pagamentoSelecionado = '';
   trocoNecessario = false;
-  ['dinheiro','credito','debito','pix'].forEach(t => document.getElementById('pag-'+t).classList.remove('selected'));
+  ['dinheiro','cartao','pix'].forEach(t => document.getElementById('pag-'+t).classList.remove('selected'));
   document.getElementById('trocoSection').classList.remove('show');
   document.getElementById('pixInfo').classList.remove('show');
   document.getElementById('trocoValor').classList.remove('show');
@@ -2764,7 +2780,7 @@ function copiarPixCola() {
 
 function selecionarPag(tipo) {
   pagamentoSelecionado = tipo;
-  ['dinheiro','credito','debito','pix'].forEach(t => {
+  ['dinheiro','cartao','pix'].forEach(t => {
     document.getElementById('pag-' + t).classList.toggle('selected', t === tipo);
   });
   document.getElementById('trocoSection').classList.toggle('show', tipo === 'dinheiro');
@@ -2802,7 +2818,7 @@ function selecionarTroco(sim) {
 }
 
 function getPagamentoTexto() {
-  const labels = { dinheiro: 'Dinheiro 💵', credito: 'Cartão de Crédito 💳', debito: 'Cartão de Débito 💳', pix: 'Pix ⚡' };
+  const labels = { dinheiro: 'Dinheiro 💵', cartao: 'Cartão 💳', pix: 'Pix ⚡' };
   if (!pagamentoSelecionado) return '';
   let txt = labels[pagamentoSelecionado] || pagamentoSelecionado;
   if (pagamentoSelecionado === 'dinheiro' && trocoNecessario) {
@@ -2942,7 +2958,7 @@ async function toggleVarAtivo(varId, ativo) {
 
 // ── VARIAÇÕES — CLIENTE ──
 let varModalItemId = null;
-let varSelecionada = null;
+let varQtys = {}; // { varId: qty }
 
 function abrirVarModal(itemId) {
   const item = data.items.find(i => i.id === itemId);
@@ -2951,29 +2967,66 @@ function abrirVarModal(itemId) {
   if (!vars.length) return;
 
   varModalItemId = itemId;
-  varSelecionada = null;
+  varQtys = {};
 
-  // Header
   const cat = data.categories.find(c => c.id === item.category_id);
   const emoji = cat ? (cat.icon_url ? `<img src="${cat.icon_url}" style="width:100%;height:100%;object-fit:contain;">` : cat.icon) : '🥟';
   document.getElementById('varModalThumb').innerHTML = imgEl(item.img_url, emoji, 'thumb');
   document.getElementById('varModalName').textContent = item.name;
   document.getElementById('varModalDesc').textContent = item.description || '';
 
-  // Opções
-  document.getElementById('varOptions').innerHTML = vars.map(v => `
-    <div class="var-option" id="varopt-${v.id}" onclick="selecionarVar('${v.id}', ${v.price}, '${v.name.replace(/'/g,"\\'")}')">
-      <div class="var-option-radio"></div>
-      <span class="var-option-name">${v.name}</span>
-      <span class="var-option-price">R$ ${Number(v.price).toFixed(2).replace('.',',')}</span>
-    </div>`).join('');
-
-  const btn = document.getElementById('varAddBtn');
-  btn.disabled = true;
-  btn.textContent = 'Selecione uma opção';
+  renderVarOptions(vars);
+  atualizarVarSubtotal();
 
   document.getElementById('varModalBg').classList.add('open');
   document.body.style.overflow = 'hidden';
+}
+
+function renderVarOptions(vars) {
+  document.getElementById('varOptions').innerHTML = vars.map(v => `
+    <div class="var-option${(varQtys[v.id]||0) > 0 ? ' has-qty' : ''}" id="varopt-${v.id}">
+      <span class="var-option-name">${v.name}</span>
+      <span class="var-option-price">R$ ${Number(v.price).toFixed(2).replace('.',',')}</span>
+      <div class="var-qty-control">
+        <button class="var-qty-btn" onclick="varChangeQty('${v.id}', ${v.price}, '${v.name.replace(/'/g,"\\'")}', -1)">−</button>
+        <span class="var-qty-display" id="varqty-${v.id}">${varQtys[v.id] || 0}</span>
+        <button class="var-qty-btn" onclick="varChangeQty('${v.id}', ${v.price}, '${v.name.replace(/'/g,"\\'")}', 1)">+</button>
+      </div>
+    </div>`).join('');
+}
+
+function varChangeQty(varId, price, name, delta) {
+  varQtys[varId] = Math.max(0, (varQtys[varId] || 0) + delta);
+  // Atualiza display sem re-renderizar tudo
+  const qtyEl = document.getElementById('varqty-' + varId);
+  const optEl = document.getElementById('varopt-' + varId);
+  if (qtyEl) qtyEl.textContent = varQtys[varId];
+  if (optEl) optEl.classList.toggle('has-qty', varQtys[varId] > 0);
+  atualizarVarSubtotal();
+}
+
+function atualizarVarSubtotal() {
+  const item = data.items.find(i => i.id === varModalItemId);
+  const vars = (data.variations || []).filter(v => v.item_id === varModalItemId && v.active !== false);
+  let total = 0, count = 0;
+  vars.forEach(v => {
+    const q = varQtys[v.id] || 0;
+    total += q * v.price;
+    count += q;
+  });
+  const subtotalEl = document.getElementById('varModalSubtotal');
+  const btn = document.getElementById('varAddBtn');
+  if (count === 0) {
+    subtotalEl.textContent = 'Nenhum item selecionado';
+    subtotalEl.classList.remove('has-items');
+    btn.disabled = true;
+    btn.textContent = 'Adicionar ao carrinho';
+  } else {
+    subtotalEl.textContent = `${count} item${count>1?'s':''} · R$ ${total.toFixed(2).replace('.',',')}`;
+    subtotalEl.classList.add('has-items');
+    btn.disabled = false;
+    btn.textContent = `Adicionar ao carrinho — R$ ${total.toFixed(2).replace('.',',')}`;
+  }
 }
 
 function fecharVarModal(e) {
@@ -2981,38 +3034,35 @@ function fecharVarModal(e) {
   document.getElementById('varModalBg').classList.remove('open');
   document.body.style.overflow = '';
   varModalItemId = null;
-  varSelecionada = null;
-}
-
-function selecionarVar(varId, price, name) {
-  varSelecionada = { varId, price, name };
-  document.querySelectorAll('.var-option').forEach(el => el.classList.remove('selected'));
-  document.getElementById('varopt-' + varId).classList.add('selected');
-  const btn = document.getElementById('varAddBtn');
-  btn.disabled = false;
-  btn.textContent = `Adicionar ${name} — R$ ${Number(price).toFixed(2).replace('.',',')}`;
+  varQtys = {};
 }
 
 function adicionarVariacao() {
-  if (!varModalItemId || !varSelecionada) return;
+  if (!varModalItemId) return;
   const item = data.items.find(i => i.id === varModalItemId);
-  // Usa chave composta item+variacao no carrinho
-  const cartKey = `${varModalItemId}__${varSelecionada.varId}`;
-  cart[cartKey] = (cart[cartKey] || 0) + 1;
-  // Guarda metadados da variação no carrinho
+  const vars = (data.variations || []).filter(v => v.item_id === varModalItemId && v.active !== false);
   if (!cart.__meta) cart.__meta = {};
-  cart.__meta[cartKey] = {
-    itemId: varModalItemId,
-    name: `${item.name} (${varSelecionada.name})`,
-    price: varSelecionada.price,
-    img_url: item.img_url
-  };
+  let added = 0;
+  vars.forEach(v => {
+    const qty = varQtys[v.id] || 0;
+    if (qty === 0) return;
+    const cartKey = `${varModalItemId}__${v.id}`;
+    cart[cartKey] = (cart[cartKey] || 0) + qty;
+    cart.__meta[cartKey] = {
+      itemId: varModalItemId,
+      name: `${item.name} (${v.name})`,
+      price: v.price,
+      img_url: item.img_url
+    };
+    added += qty;
+  });
+  if (added === 0) return;
   updateCartUI();
   document.getElementById('varModalBg').classList.remove('open');
   document.body.style.overflow = '';
   varModalItemId = null;
-  varSelecionada = null;
-  toast('✅ Adicionado ao carrinho!');
+  varQtys = {};
+  toast(`✅ ${added} item${added>1?'s':''} adicionado${added>1?'s':''}!`);
 }
 
 function toast(msg) {

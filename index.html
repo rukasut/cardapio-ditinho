@@ -1565,6 +1565,17 @@
         </div>
         <button class="btn btn-primary" onclick="addItem()">+ Adicionar</button>
       </div>
+    </div>
+
+    <!-- Lista de produtos com busca -->
+    <div class="admin-card">
+      <h3>📋 Produtos Cadastrados</h3>
+      <div style="margin-bottom:12px">
+        <input type="text" id="adminSearchBar"
+          placeholder="🔍 Buscar produto no admin..."
+          oninput="filtrarAdmin(this.value)"
+          style="width:100%;background:var(--creme);border:2px solid var(--creme2);color:var(--text);padding:8px 14px;border-radius:10px;font-family:'Nunito',sans-serif;font-size:0.85rem;outline:none;">
+      </div>
       <div class="admin-list" id="itemList"></div>
     </div>
   </div>
@@ -2346,14 +2357,84 @@ function renderAdmin() {
   document.getElementById('newItemCategory').innerHTML = data.categories.map(c =>
     `<option value="${c.id}">${c.icon_url ? '' : c.icon} ${c.name}</option>`).join('');
 
-  // ── PRODUTOS agrupados por categoria ──
+  // ── PRODUTOS ──
+  renderAdminItemList();
+}
+
+function abrirEdicaoVar(varId) {
+  document.getElementById('var-view-' + varId).style.display = 'none';
+  document.getElementById('var-edit-' + varId).style.display = 'flex';
+}
+
+function cancelarEdicaoVar(varId) {
+  document.getElementById('var-view-' + varId).style.display = 'flex';
+  document.getElementById('var-edit-' + varId).style.display = 'none';
+}
+
+async function salvarEdicaoVar(varId, itemId) {
+  const name  = document.getElementById('var-edit-name-' + varId).value.trim();
+  const price = parseFloat(document.getElementById('var-edit-price-' + varId).value);
+  if (!name) { toast('⚠️ Digite o nome'); return; }
+  if (isNaN(price) || price < 0) { toast('⚠️ Preço inválido'); return; }
+  const { error } = await sb.from('variations').update({ name, price }).eq('id', varId);
+  if (error) { toast('❌ Erro ao salvar'); return; }
+  const idx = (data.variations || []).findIndex(v => v.id === varId);
+  if (idx !== -1) { data.variations[idx].name = name; data.variations[idx].price = price; }
+  renderVarAdminList(itemId);
+  renderMenu();
+  toast('✅ Variação atualizada!');
+}
+
+// ── BUSCA NO ADMIN ──
+let adminSearchQuery = '';
+
+function filtrarAdmin(q) {
+  adminSearchQuery = q.toLowerCase().trim();
+  renderAdminItemList();
+}
+
+function renderAdminItemList() {
   const itemListEl = document.getElementById('itemList');
   if (!data.items.length) {
     itemListEl.innerHTML = '<p style="color:var(--muted);font-size:0.8rem;padding:6px 0">Nenhum produto cadastrado</p>';
     return;
   }
 
-  // Agrupa itens por categoria — mantém ordem por position
+  const filtered = adminSearchQuery
+    ? data.items.filter(i => i.name.toLowerCase().includes(adminSearchQuery) || (i.description||'').toLowerCase().includes(adminSearchQuery))
+    : data.items;
+
+  if (adminSearchQuery && !filtered.length) {
+    itemListEl.innerHTML = '<p style="color:var(--muted);font-size:0.8rem;padding:6px 0">Nenhum produto encontrado</p>';
+    return;
+  }
+
+  // Se busca ativa, lista flat sem agrupamento
+  if (adminSearchQuery) {
+    itemListEl.innerHTML = filtered.map(item => {
+      const cat = data.categories.find(c => c.id === item.category_id);
+      const emoji = cat ? (cat.icon_url ? `<img src="${cat.icon_url}" style="width:16px;height:16px;object-fit:contain;vertical-align:middle;">` : cat.icon) : '🥟';
+      return `<div class="admin-list-item${item.active === false ? ' inativo' : ''}">
+        <div class="admin-thumb">${imgEl(item.img_url, emoji, 'thumb')}</div>
+        <div class="admin-item-info">
+          <div class="admin-item-name">${item.name}</div>
+          <div class="admin-item-sub">R$ ${Number(item.price).toFixed(2).replace('.',',')}${item.description?' · '+item.description:''}</div>
+        </div>
+        ${cat?`<span class="tag">${cat.icon_url?`<img src="${cat.icon_url}" style="width:12px;height:12px;object-fit:contain;vertical-align:middle;">`:cat.icon} ${cat.name}</span>`:''}
+        <div class="item-toggle">
+          <label class="toggle-switch">
+            <input type="checkbox" ${item.active !== false ? 'checked' : ''} onchange="toggleItemAtivo('${item.id}', this.checked)">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+        <button class="btn btn-edit" onclick="abrirEditModal('${item.id}')">✏️</button>
+        <button class="btn btn-danger" onclick="removeItem('${item.id}')">Remover</button>
+      </div>`;
+    }).join('');
+    return;
+  }
+
+  // Agrupado por categoria (padrão)
   const semCategoria = data.items.filter(i => !i.category_id || !data.categories.find(c => c.id === i.category_id));
   const grupos = [
     ...data.categories.map(cat => ({
@@ -2364,16 +2445,10 @@ function renderAdmin() {
   ];
 
   itemListEl.innerHTML = grupos.map(({ cat, items }) => {
-    const headerIcon = cat
-      ? (cat.icon_url ? `<img src="${cat.icon_url}" style="width:18px;height:18px;object-fit:contain;vertical-align:middle;">` : cat.icon)
-      : '📦';
-    const headerName = cat ? cat.name : 'Sem categoria';
+    const headerIcon = cat ? (cat.icon_url ? `<img src="${cat.icon_url}" style="width:18px;height:18px;object-fit:contain;vertical-align:middle;">` : cat.icon) : '📦';
     const catId = cat ? cat.id : 'sem-cat';
-
     const itemsHtml = items.map(item => {
-      const emoji = cat ? (cat.icon_url
-        ? `<img src="${cat.icon_url}" style="width:16px;height:16px;object-fit:contain;vertical-align:middle;">`
-        : cat.icon) : '🥟';
+      const emoji = cat ? (cat.icon_url ? `<img src="${cat.icon_url}" style="width:16px;height:16px;object-fit:contain;vertical-align:middle;">` : cat.icon) : '🥟';
       return `<div class="admin-list-item${item.active === false ? ' inativo' : ''}"
         draggable="true" data-id="${item.id}" data-cat="${catId}"
         ondragstart="onItemDragStart(event)" ondragover="onItemDragOver(event)"
@@ -2385,7 +2460,7 @@ function renderAdmin() {
           <div class="admin-item-sub">R$ ${Number(item.price).toFixed(2).replace('.',',')}${item.description?' · '+item.description:''}</div>
         </div>
         <div class="item-toggle">
-          <label class="toggle-switch" title="${item.active === false ? 'Oculto no cardápio' : 'Visível no cardápio'}">
+          <label class="toggle-switch">
             <input type="checkbox" ${item.active !== false ? 'checked' : ''} onchange="toggleItemAtivo('${item.id}', this.checked)">
             <span class="toggle-slider"></span>
           </label>
@@ -2394,10 +2469,9 @@ function renderAdmin() {
         <button class="btn btn-danger" onclick="removeItem('${item.id}')">Remover</button>
       </div>`;
     }).join('');
-
     return `<div class="item-group">
       <div class="item-group-header">
-        ${headerIcon} ${headerName}
+        ${headerIcon} ${cat ? cat.name : 'Sem categoria'}
         <span class="item-group-count">${items.length} produto${items.length>1?'s':''}</span>
       </div>
       ${itemsHtml}
@@ -2406,7 +2480,6 @@ function renderAdmin() {
 }
 
 // ── DRAG VARIAÇÕES ──
-let dragVarSrcId = null;
 
 function onVarDragStart(e) {
   dragVarSrcId = e.currentTarget.dataset.varid;
@@ -2802,13 +2875,22 @@ function renderVarAdminList(itemId) {
       ondragstart="onVarDragStart(event)" ondragover="onVarDragOver(event)"
       ondrop="onVarDrop(event)" ondragend="onVarDragEnd(event)">
       <span class="var-drag-handle">⠿</span>
-      <span class="var-admin-item-name">${v.name}</span>
-      <span class="var-admin-item-price">R$ ${Number(v.price).toFixed(2).replace('.',',')}</span>
-      <label class="toggle-switch" style="transform:scale(0.85)" title="${v.active === false ? 'Oculto' : 'Visível'}">
+      <div id="var-view-${v.id}" style="display:flex;align-items:center;gap:8px;flex:1;min-width:0">
+        <span class="var-admin-item-name">${v.name}</span>
+        <span class="var-admin-item-price">R$ ${Number(v.price).toFixed(2).replace('.',',')}</span>
+      </div>
+      <div id="var-edit-${v.id}" style="display:none;flex:1;gap:6px;align-items:center">
+        <input id="var-edit-name-${v.id}" value="${v.name}" style="flex:1;background:var(--white);border:2px solid var(--verde);border-radius:6px;padding:4px 8px;font-family:'Nunito',sans-serif;font-size:0.8rem;color:var(--text);outline:none;min-width:0">
+        <input id="var-edit-price-${v.id}" value="${Number(v.price).toFixed(2)}" type="number" step="0.01" style="width:72px;background:var(--white);border:2px solid var(--verde);border-radius:6px;padding:4px 8px;font-family:'Nunito',sans-serif;font-size:0.8rem;color:var(--text);outline:none">
+        <button class="btn-sm btn-primary" style="padding:4px 8px" onclick="salvarEdicaoVar('${v.id}','${itemId}')">✓</button>
+        <button class="btn-sm" style="padding:4px 8px;background:var(--creme);border:2px solid var(--creme2);border-radius:6px;cursor:pointer" onclick="cancelarEdicaoVar('${v.id}')">✕</button>
+      </div>
+      <label class="toggle-switch" style="transform:scale(0.85);flex-shrink:0" title="${v.active === false ? 'Oculto' : 'Visível'}">
         <input type="checkbox" ${v.active !== false ? 'checked' : ''} onchange="toggleVarAtivo('${v.id}', this.checked)">
         <span class="toggle-slider"></span>
       </label>
-      <button class="btn-sm btn-danger" style="padding:4px 8px" onclick="removerVariacao('${v.id}')">✕</button>
+      <button class="btn-sm btn-edit" style="padding:4px 8px;flex-shrink:0" onclick="abrirEdicaoVar('${v.id}')">✏️</button>
+      <button class="btn-sm btn-danger" style="padding:4px 8px;flex-shrink:0" onclick="removerVariacao('${v.id}')">✕</button>
     </div>`).join('');
 }
 

@@ -541,6 +541,54 @@
   }
   .edit-cat-modal h3 { font-family: 'Fredoka One', cursive; font-size: 1.3rem; color: var(--verde); }
 
+  /* ── TOGGLE ATIVO/INATIVO ── */
+  .item-toggle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  .toggle-switch {
+    position: relative;
+    width: 36px;
+    height: 20px;
+    flex-shrink: 0;
+  }
+
+  .toggle-switch input { display: none; }
+
+  .toggle-slider {
+    position: absolute;
+    inset: 0;
+    background: #ccc;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .toggle-slider::before {
+    content: '';
+    position: absolute;
+    width: 14px; height: 14px;
+    left: 3px; top: 3px;
+    background: #fff;
+    border-radius: 50%;
+    transition: transform 0.2s;
+  }
+
+  .toggle-switch input:checked + .toggle-slider { background: var(--verde); }
+  .toggle-switch input:checked + .toggle-slider::before { transform: translateX(16px); }
+
+  .admin-list-item.inativo {
+    opacity: 0.5;
+  }
+
+  .admin-list-item.inativo .admin-item-name {
+    text-decoration: line-through;
+    color: var(--muted);
+  }
+
   .btn-salvar-tudo {
     background: var(--verde);
     color: #fff;
@@ -1442,8 +1490,8 @@
 //  CONFIGURAÇÃO SUPABASE — preencha após criar
 //  o projeto em supabase.com
 // ════════════════════════════════════════════════
-const SUPABASE_URL  = 'https://abvocutmjmtnyipxlrwo.supabase.co';
-const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFidm9jdXRtam10bnlpcHhscndvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcyNDcxMDEsImV4cCI6MjA5MjgyMzEwMX0.M7FHqGn1NvriiIIUVC-9mZAX3LCRcarooVEQKXevtYM';
+const SUPABASE_URL  = 'COLE_SUA_URL_AQUI';
+const SUPABASE_KEY  = 'COLE_SUA_ANON_KEY_AQUI';
 const ADMIN_PASSWORD = 'ditinho123'; // troque no primeiro acesso via painel
 // ════════════════════════════════════════════════
 
@@ -1761,7 +1809,7 @@ function renderMenu() {
 
   contentEl.innerHTML = cats.map(cat => {
     const catItems = data.items
-      .filter(i => i.category_id === cat.id || (!i.category_id && cat.id === 'geral'))
+      .filter(i => (i.category_id === cat.id || (!i.category_id && cat.id === 'geral')) && i.active !== false)
       .sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
     if (!catItems.length) return '';
     return `<div class="category-block" id="cat-${cat.id}">
@@ -1926,7 +1974,7 @@ async function addItem() {
   const img_url = await uploadImg(imgFile);
 
   const { data: row, error } = await sb.from('items').insert({
-    name, price, description: desc, category_id: cat_id, img_url, position: data.items.length
+    name, price, description: desc, category_id: cat_id, img_url, position: data.items.length, active: true
   }).select().single();
 
   if (error) { toast('❌ Erro ao salvar produto'); console.error(error); return; }
@@ -1938,6 +1986,15 @@ async function addItem() {
   document.getElementById('imgPreview').style.display = 'none';
   renderAdmin(); renderMenu();
   toast('✅ Produto adicionado!');
+}
+
+async function toggleItemAtivo(id, ativo) {
+  await sb.from('items').update({ active: ativo }).eq('id', id);
+  const idx = data.items.findIndex(i => i.id === id);
+  if (idx !== -1) data.items[idx].active = ativo;
+  renderAdmin();
+  renderMenu();
+  toast(ativo ? '✅ Produto visível no cardápio' : '🙈 Produto oculto do cardápio');
 }
 
 async function removeItem(id) {
@@ -2007,11 +2064,17 @@ function renderAdmin() {
       const emoji = cat ? (cat.icon_url
         ? `<img src="${cat.icon_url}" style="width:16px;height:16px;object-fit:contain;vertical-align:middle;">`
         : cat.icon) : '🥟';
-      return `<div class="admin-list-item">
+      return `<div class="admin-list-item${item.active === false ? ' inativo' : ''}">
         <div class="admin-thumb">${imgEl(item.img_url, emoji, 'thumb')}</div>
         <div class="admin-item-info">
           <div class="admin-item-name">${item.name}</div>
           <div class="admin-item-sub">R$ ${Number(item.price).toFixed(2).replace('.',',')}${item.description?' · '+item.description:''}</div>
+        </div>
+        <div class="item-toggle">
+          <label class="toggle-switch" title="${item.active === false ? 'Oculto no cardápio' : 'Visível no cardápio'}">
+            <input type="checkbox" ${item.active !== false ? 'checked' : ''} onchange="toggleItemAtivo('${item.id}', this.checked)">
+            <span class="toggle-slider"></span>
+          </label>
         </div>
         <button class="btn btn-edit" onclick="abrirEditModal('${item.id}')">✏️</button>
         <button class="btn btn-danger" onclick="removeItem('${item.id}')">Remover</button>

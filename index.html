@@ -541,7 +541,161 @@
   }
   .edit-cat-modal h3 { font-family: 'Fredoka One', cursive; font-size: 1.3rem; color: var(--verde); }
 
-  /* ── TOGGLE ATIVO/INATIVO ── */
+  /* ── MODAL VARIAÇÕES (cliente) ── */
+  .var-modal-bg {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.65);
+    z-index: 500; display: none;
+    align-items: flex-end; justify-content: center;
+  }
+  .var-modal-bg.open { display: flex; }
+
+  .var-modal {
+    background: var(--white);
+    border-radius: 22px 22px 0 0;
+    width: min(520px, 100vw);
+    max-height: 80vh;
+    display: flex; flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 -8px 40px rgba(0,0,0,0.2);
+    animation: slideUp 0.3s cubic-bezier(0.4,0,0.2,1);
+  }
+
+  .var-modal-header {
+    background: var(--verde);
+    padding: 16px 20px;
+    display: flex; align-items: center; gap: 14px;
+    flex-shrink: 0;
+  }
+
+  .var-modal-thumb {
+    width: 56px; height: 56px; border-radius: 10px;
+    overflow: hidden; flex-shrink: 0;
+    background: var(--creme2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.8rem;
+  }
+
+  .var-modal-thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+  .var-modal-info { flex: 1; }
+  .var-modal-name { font-family: 'Fredoka One', cursive; font-size: 1.1rem; color: #fff; }
+  .var-modal-desc { font-size: 0.78rem; color: rgba(255,255,255,0.75); margin-top: 2px; }
+
+  .var-modal-body { overflow-y: auto; padding: 16px 20px; background: var(--creme); }
+
+  .var-label { font-size: 0.74rem; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px; display: block; }
+
+  .var-options { display: flex; flex-direction: column; gap: 8px; }
+
+  .var-option {
+    background: var(--white);
+    border: 2px solid var(--creme2);
+    border-radius: 12px;
+    padding: 12px 16px;
+    display: flex; align-items: center; gap: 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .var-option:hover { border-color: var(--verde); }
+  .var-option.selected { border-color: var(--verde); background: #e8f5f0; }
+
+  .var-option-radio {
+    width: 20px; height: 20px; border-radius: 50%;
+    border: 2px solid var(--creme2);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; transition: all 0.15s;
+  }
+
+  .var-option.selected .var-option-radio {
+    border-color: var(--verde);
+    background: var(--verde);
+  }
+
+  .var-option.selected .var-option-radio::after {
+    content: '';
+    width: 8px; height: 8px;
+    background: #fff; border-radius: 50%;
+  }
+
+  .var-option-name { flex: 1; font-weight: 700; font-size: 0.9rem; }
+  .var-option-price { font-family: 'Fredoka One', cursive; font-size: 1rem; color: var(--verde); }
+
+  .var-modal-footer {
+    padding: 14px 20px 20px;
+    background: var(--white);
+    border-top: 2px solid var(--creme2);
+    flex-shrink: 0;
+  }
+
+  .var-add-btn {
+    width: 100%; background: var(--laranja); color: #fff;
+    border: none; padding: 14px; border-radius: 12px;
+    font-family: 'Fredoka One', cursive; font-size: 1.05rem;
+    cursor: pointer; transition: all 0.2s;
+    box-shadow: 0 4px 14px rgba(232,98,42,0.35);
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+
+  .var-add-btn:hover { background: #d4541f; }
+  .var-add-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* ── VARIAÇÕES NO ADMIN ── */
+  .var-admin-section {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 2px solid var(--creme2);
+  }
+
+  .var-admin-section h4 {
+    font-family: 'Fredoka One', cursive;
+    font-size: 0.95rem; color: var(--verde);
+    margin-bottom: 10px;
+  }
+
+  .var-admin-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
+
+  .var-admin-item {
+    background: var(--creme);
+    border: 2px solid var(--creme2);
+    border-radius: 8px;
+    padding: 8px 12px;
+    display: flex; align-items: center; gap: 8px;
+    font-size: 0.82rem;
+  }
+
+  .var-admin-item.inativo { opacity: 0.5; }
+  .var-admin-item-name { flex: 1; font-weight: 700; }
+  .var-admin-item-price { color: var(--verde); font-weight: 800; margin-right: 4px; }
+
+  .var-add-row { display: flex; gap: 6px; align-items: flex-end; flex-wrap: wrap; }
+
+  .var-add-row input {
+    background: var(--creme); border: 2px solid var(--creme2);
+    color: var(--text); padding: 7px 10px; border-radius: 8px;
+    font-family: 'Nunito', sans-serif; font-size: 0.82rem;
+  }
+
+  .var-add-row input:focus { outline: none; border-color: var(--verde); }
+
+  .btn-sm {
+    padding: 7px 12px; border-radius: 8px; border: none;
+    cursor: pointer; font-family: 'Nunito', sans-serif;
+    font-weight: 800; font-size: 0.78rem; transition: all 0.15s;
+    white-space: nowrap;
+  }
+
+  /* ── INDICADOR DE VARIAÇÕES NO CARD ── */
+  .item-has-variations {
+    font-size: 0.7rem; font-weight: 800;
+    color: var(--verde); background: #e8f5f0;
+    border: 1px solid #a5d6c0;
+    padding: 2px 8px; border-radius: 999px;
+    display: inline-block; margin-top: 4px;
+  }
+
+  /* ── TOGGLE ── */
   .item-toggle {
     display: flex;
     align-items: center;
@@ -1440,6 +1594,41 @@
       <button class="btn-full btn-ghost" onclick="fecharEditModal()">Cancelar</button>
       <button class="btn-full btn-verde" onclick="salvarEdicao()">💾 Salvar alterações</button>
     </div>
+
+    <!-- VARIAÇÕES -->
+    <div class="var-admin-section">
+      <h4>🔀 Variações (opcional)</h4>
+      <p style="font-size:0.74rem;color:var(--muted);margin-bottom:10px">Ex: Coca-Cola, Fanta, Sprite — cada uma com seu preço</p>
+      <div class="var-admin-list" id="varAdminList"></div>
+      <div class="var-add-row">
+        <input type="text" id="newVarName" placeholder="Nome (ex: Coca-Cola)" style="flex:1;min-width:120px">
+        <input type="number" id="newVarPrice" placeholder="Preço" step="0.01" style="width:90px">
+        <button class="btn-sm btn-primary" onclick="adicionarVariacaoAdmin()">+ Adicionar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL VARIAÇÕES (cliente) -->
+<div class="var-modal-bg" id="varModalBg" onclick="fecharVarModal(event)">
+  <div class="var-modal" onclick="event.stopPropagation()">
+    <div class="var-modal-header">
+      <div class="var-modal-thumb" id="varModalThumb"></div>
+      <div class="var-modal-info">
+        <div class="var-modal-name" id="varModalName"></div>
+        <div class="var-modal-desc" id="varModalDesc"></div>
+      </div>
+      <button class="close-btn" onclick="fecharVarModal()">✕</button>
+    </div>
+    <div class="var-modal-body">
+      <span class="var-label">Escolha uma opção</span>
+      <div class="var-options" id="varOptions"></div>
+    </div>
+    <div class="var-modal-footer">
+      <button class="var-add-btn" id="varAddBtn" onclick="adicionarVariacao()" disabled>
+        Selecione uma opção
+      </button>
+    </div>
   </div>
 </div>
 
@@ -1490,8 +1679,8 @@
 //  CONFIGURAÇÃO SUPABASE — preencha após criar
 //  o projeto em supabase.com
 // ════════════════════════════════════════════════
-const SUPABASE_URL  = 'https://abvocutmjmtnyipxlrwo.supabase.co';
-const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFidm9jdXRtam10bnlpcHhscndvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcyNDcxMDEsImV4cCI6MjA5MjgyMzEwMX0.M7FHqGn1NvriiIIUVC-9mZAX3LCRcarooVEQKXevtYM';
+const SUPABASE_URL  = 'COLE_SUA_URL_AQUI';
+const SUPABASE_KEY  = 'COLE_SUA_ANON_KEY_AQUI';
 const ADMIN_PASSWORD = 'ditinho123'; // troque no primeiro acesso via painel
 // ════════════════════════════════════════════════
 
@@ -1511,17 +1700,19 @@ function setLoading(on) {
 async function loadData() {
   setLoading(true);
   try {
-    const [cfgRes, catRes, itemRes] = await Promise.all([
+    const [cfgRes, catRes, itemRes, varRes] = await Promise.all([
       sb.from('config').select('*').single(),
       sb.from('categories').select('*').order('position'),
-      sb.from('items').select('*').order('position')
+      sb.from('items').select('*').order('position'),
+      sb.from('variations').select('*').order('position')
     ]);
     data.config     = cfgRes.data  || {};
     data.categories = catRes.data  || [];
     data.items      = itemRes.data || [];
+    data.variations = varRes.data  || [];
   } catch(e) {
     console.error('Erro ao carregar dados:', e);
-    data = { config: {}, categories: [], items: [] };
+    data = { config: {}, categories: [], items: [], variations: [] };
   }
   renderMenu();
 }
@@ -1630,13 +1821,23 @@ function removeFromCart(id) {
   updateCartUI(); renderCart();
 }
 
-function removeItemFully(id) { delete cart[id]; updateCartUI(); renderCart(); }
-function getQty(id) { return cart[id] || 0; }
+function removeItemFully(key) {
+  delete cart[key];
+  if (cart.__meta) delete cart.__meta[key];
+  updateCartUI(); renderCart();
+}
+function getQty(id) {
+  return Object.entries(cart)
+    .filter(([k]) => k !== '__meta' && (k === id || k.startsWith(id + '__')))
+    .reduce((a, [, v]) => a + v, 0);
+}
 
 function updateCartUI() {
-  const count = Object.values(cart).reduce((a, b) => a + b, 0);
+  const count = Object.entries(cart)
+    .filter(([k]) => k !== '__meta')
+    .reduce((a, [, v]) => a + v, 0);
   document.getElementById('cartCount').textContent = count;
-  const total = data.items.filter(i => cart[i.id]).reduce((acc, i) => acc + cart[i.id] * i.price, 0);
+  const total = getCartTotal();
   const btn = document.getElementById('finalizarBtnBig');
   const btnTotal = document.getElementById('finalizarBtnTotal');
   if (btn) {
@@ -1646,23 +1847,48 @@ function updateCartUI() {
   renderMenu();
 }
 
+function getCartTotal() {
+  let total = 0;
+  Object.entries(cart).forEach(([key, qty]) => {
+    if (key === '__meta') return;
+    if (key.includes('__')) {
+      // variação
+      const meta = cart.__meta?.[key];
+      if (meta) total += qty * meta.price;
+    } else {
+      const item = data.items.find(i => i.id === key);
+      if (item) total += qty * item.price;
+    }
+  });
+  return total;
+}
+
+function getCartItems() {
+  const items = [];
+  Object.entries(cart).forEach(([key, qty]) => {
+    if (key === '__meta' || qty === 0) return;
+    if (key.includes('__')) {
+      const meta = cart.__meta?.[key];
+      if (meta) items.push({ key, qty, name: meta.name, price: meta.price, img_url: meta.img_url });
+    } else {
+      const item = data.items.find(i => i.id === key);
+      if (item) items.push({ key, qty, name: item.name, price: item.price, img_url: item.img_url });
+    }
+  });
+  return items;
+}
+
 // ── RESUMO MODAL ──
 function abrirResumo() {
-  const items = data.items.filter(i => cart[i.id]);
+  const items = getCartItems();
   if (!items.length) { toast('⚠️ Adicione itens antes de finalizar'); return; }
-  const catEmoji = {};
-  data.categories.forEach(c => catEmoji[c.id] = c.icon_url
-    ? `<img src="${c.icon_url}" style="width:20px;height:20px;object-fit:contain;">`
-    : c.icon);
-  let total = 0;
+  const total = getCartTotal();
   document.getElementById('resumoItens').innerHTML = items.map(item => {
-    const qty = cart[item.id], sub = qty * item.price;
-    total += sub;
-    const emoji = catEmoji[item.category_id] || '🥟';
+    const sub = item.qty * item.price;
     return `<div class="resumo-item">
-      <div class="resumo-item-thumb">${imgEl(item.img_url, emoji, 'thumb')}</div>
+      <div class="resumo-item-thumb">${item.img_url ? `<img src="${item.img_url}" style="width:100%;height:100%;object-fit:cover;">` : '<span style="font-size:1.3rem">🥟</span>'}</div>
       <div class="resumo-item-info">
-        <div class="resumo-item-name">${qty}× ${item.name}</div>
+        <div class="resumo-item-name">${item.qty}× ${item.name}</div>
         <div class="resumo-item-sub">R$ ${item.price.toFixed(2).replace('.',',')} cada</div>
       </div>
       <div class="resumo-item-price">R$ ${sub.toFixed(2).replace('.',',')}</div>
@@ -1694,14 +1920,13 @@ function enviarWhatsApp() {
   const whats = (data.config.whatsapp || '').replace(/\D/g,'');
   if (!whats) { toast('⚠️ WhatsApp não configurado. Fale com o administrador.'); return; }
   if (!pagamentoSelecionado) { toast('⚠️ Selecione a forma de pagamento'); return; }
-  const items = data.items.filter(i => cart[i.id]);
+  const items = getCartItems();
   if (!items.length) return;
-  let total = 0;
+  const total = getCartTotal();
   let msg = `*🥟 Novo Pedido — ${data.config.name || 'Pastelaria do Ditinho'}*\n\n*Itens:*\n`;
   items.forEach(item => {
-    const qty = cart[item.id], sub = qty * item.price;
-    total += sub;
-    msg += `• ${qty}× ${item.name} — R$ ${sub.toFixed(2).replace('.',',')}\n`;
+    const sub = item.qty * item.price;
+    msg += `• ${item.qty}× ${item.name} — R$ ${sub.toFixed(2).replace('.',',')}\n`;
   });
   msg += `\n*Total: R$ ${total.toFixed(2).replace('.',',')}*`;
   msg += `\n*Pagamento:* ${getPagamentoTexto()}`;
@@ -1718,7 +1943,7 @@ function enviarWhatsApp() {
 
 function renderCart() {
   const el = document.getElementById('cartItems');
-  const items = data.items.filter(i => cart[i.id]);
+  const items = getCartItems();
   if (!items.length) {
     el.innerHTML = '<div class="empty-cart"><div style="font-size:2.5rem;margin-bottom:8px">🛒</div><p style="font-weight:700;color:var(--muted)">Carrinho vazio</p></div>';
     document.getElementById('totalValue').textContent = 'R$ 0,00';
@@ -1726,22 +1951,16 @@ function renderCart() {
     return;
   }
   document.getElementById('checkoutBtn').disabled = false;
-  let total = 0;
-  const catEmoji = {};
-  data.categories.forEach(c => catEmoji[c.id] = c.icon_url
-    ? `<img src="${c.icon_url}" style="width:20px;height:20px;object-fit:contain;">`
-    : c.icon);
+  const total = getCartTotal();
   el.innerHTML = items.map(item => {
-    const qty = cart[item.id], sub = qty * item.price;
-    total += sub;
-    const emoji = catEmoji[item.category_id] || '🥟';
+    const sub = item.qty * item.price;
     return `<div class="cart-item">
-      <div class="cart-item-thumb">${imgEl(item.img_url, emoji, 'thumb')}</div>
+      <div class="cart-item-thumb">${item.img_url ? `<img src="${item.img_url}" style="width:100%;height:100%;object-fit:cover;">` : '<span style="font-size:1.4rem">🥟</span>'}</div>
       <div class="cart-item-info">
-        <div class="cart-item-name">${qty}× ${item.name}</div>
+        <div class="cart-item-name">${item.qty}× ${item.name}</div>
         <div class="cart-item-price">R$ ${item.price.toFixed(2).replace('.',',')} cada · <strong>R$ ${sub.toFixed(2).replace('.',',')}</strong></div>
       </div>
-      <button class="cart-item-remove" onclick="removeItemFully('${item.id}')">remover</button>
+      <button class="cart-item-remove" onclick="removeItemFully('${item.key}')">remover</button>
     </div>`;
   }).join('');
   document.getElementById('totalValue').textContent = 'R$ ' + total.toFixed(2).replace('.', ',');
@@ -1810,29 +2029,35 @@ function renderMenu() {
   contentEl.innerHTML = cats.map(cat => {
     const catItems = data.items
       .filter(i => (i.category_id === cat.id || (!i.category_id && cat.id === 'geral')) && i.active !== false)
-      .sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
+      .sort((a, b) => (a.position||0) - (b.position||0));
     if (!catItems.length) return '';
     return `<div class="category-block" id="cat-${cat.id}">
       <div class="cat-label">${catIconEl(cat, '24px')} ${cat.name}</div>
       <div class="items-grid">
         ${catItems.map(item => {
           const qty = getQty(item.id);
+          const itemVars = (data.variations || []).filter(v => v.item_id === item.id && v.active !== false);
+          const hasVars = itemVars.length > 0;
           const catFallback = cat.icon_url
             ? `<img src="${cat.icon_url}" alt="" style="width:48px;height:48px;object-fit:contain;">`
             : cat.icon || '🥟';
-          return `<div class="item-card">
+          return `<div class="item-card" ${hasVars ? `onclick="abrirVarModal('${item.id}')" style="cursor:pointer"` : ''}>
             <div class="item-img">${imgEl(item.img_url, catFallback, 'card')}</div>
             <div class="item-body">
               <div class="item-name">${item.name}</div>
               ${item.description ? `<div class="item-desc">${item.description}</div>` : ''}
+              ${hasVars ? `<span class="item-has-variations">🔀 ${itemVars.length} opções</span>` : ''}
             </div>
             <div class="item-footer">
               <div class="item-price">R$ ${Number(item.price).toFixed(2).replace('.',',')}</div>
-              <div class="qty-control">
-                <button class="qty-btn" onclick="removeFromCart('${item.id}')">−</button>
-                <span class="qty-display">${qty}</span>
-                <button class="qty-btn" onclick="addToCart('${item.id}')">+</button>
-              </div>
+              ${hasVars
+                ? `<button class="qty-btn" onclick="event.stopPropagation();abrirVarModal('${item.id}')" style="width:auto;padding:0 12px;font-size:0.8rem;font-weight:800;">Escolher</button>`
+                : `<div class="qty-control">
+                    <button class="qty-btn" onclick="removeFromCart('${item.id}')">−</button>
+                    <span class="qty-display">${qty}</span>
+                    <button class="qty-btn" onclick="addToCart('${item.id}')">+</button>
+                  </div>`
+              }
             </div>
           </div>`;
         }).join('')}
@@ -2044,12 +2269,12 @@ function renderAdmin() {
     return;
   }
 
-  // Agrupa itens por categoria
+  // Agrupa itens por categoria — mantém ordem por position
   const semCategoria = data.items.filter(i => !i.category_id || !data.categories.find(c => c.id === i.category_id));
   const grupos = [
     ...data.categories.map(cat => ({
       cat,
-      items: data.items.filter(i => i.category_id === cat.id).sort((a,b) => a.name.localeCompare(b.name,'pt-BR'))
+      items: data.items.filter(i => i.category_id === cat.id).sort((a,b) => (a.position||0) - (b.position||0))
     })).filter(g => g.items.length),
     ...(semCategoria.length ? [{ cat: null, items: semCategoria }] : [])
   ];
@@ -2059,12 +2284,17 @@ function renderAdmin() {
       ? (cat.icon_url ? `<img src="${cat.icon_url}" style="width:18px;height:18px;object-fit:contain;vertical-align:middle;">` : cat.icon)
       : '📦';
     const headerName = cat ? cat.name : 'Sem categoria';
+    const catId = cat ? cat.id : 'sem-cat';
 
     const itemsHtml = items.map(item => {
       const emoji = cat ? (cat.icon_url
         ? `<img src="${cat.icon_url}" style="width:16px;height:16px;object-fit:contain;vertical-align:middle;">`
         : cat.icon) : '🥟';
-      return `<div class="admin-list-item${item.active === false ? ' inativo' : ''}">
+      return `<div class="admin-list-item${item.active === false ? ' inativo' : ''}"
+        draggable="true" data-id="${item.id}" data-cat="${catId}"
+        ondragstart="onItemDragStart(event)" ondragover="onItemDragOver(event)"
+        ondrop="onItemDrop(event)" ondragend="onItemDragEnd(event)">
+        <span class="drag-handle">⠿</span>
         <div class="admin-thumb">${imgEl(item.img_url, emoji, 'thumb')}</div>
         <div class="admin-item-info">
           <div class="admin-item-name">${item.name}</div>
@@ -2089,6 +2319,59 @@ function renderAdmin() {
       ${itemsHtml}
     </div>`;
   }).join('');
+}
+
+// ── DRAG AND DROP ITENS ──
+let dragItemSrcId = null;
+
+function onItemDragStart(e) {
+  dragItemSrcId = e.currentTarget.dataset.id;
+  e.currentTarget.classList.add('dragging');
+  e.dataTransfer.effectAllowed = 'move';
+  e.stopPropagation(); // evita conflito com drag de categorias
+}
+
+function onItemDragOver(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  e.dataTransfer.dropEffect = 'move';
+  document.querySelectorAll('.admin-list-item').forEach(el => el.classList.remove('drag-over'));
+  e.currentTarget.classList.add('drag-over');
+}
+
+async function onItemDrop(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  const targetId = e.currentTarget.dataset.id;
+  const targetCat = e.currentTarget.dataset.cat;
+  if (!dragItemSrcId || dragItemSrcId === targetId) return;
+
+  const srcIdx = data.items.findIndex(i => i.id === dragItemSrcId);
+  const tgtIdx = data.items.findIndex(i => i.id === targetId);
+  if (srcIdx === -1 || tgtIdx === -1) return;
+
+  // Reordena no array local
+  const [moved] = data.items.splice(srcIdx, 1);
+  data.items.splice(tgtIdx, 0, moved);
+
+  // Salva posição de todos os itens da mesma categoria no Supabase
+  const catId = data.items[tgtIdx].category_id;
+  const catItems = data.items.filter(i => i.category_id === catId);
+  await Promise.all(
+    catItems.map((item, i) => {
+      item.position = i;
+      return sb.from('items').update({ position: i }).eq('id', item.id);
+    })
+  );
+
+  renderAdmin();
+  renderMenu();
+  toast('✅ Ordem salva!');
+}
+
+function onItemDragEnd(e) {
+  e.currentTarget.classList.remove('dragging');
+  document.querySelectorAll('.admin-list-item').forEach(el => el.classList.remove('drag-over'));
 }
 
 // ── DRAG AND DROP CATEGORIAS ──
@@ -2322,10 +2605,12 @@ function abrirEditModal(id) {
   document.getElementById('editItemDesc').value     = item.description || '';
   document.getElementById('editItemImg').value      = '';
   document.getElementById('editImgPreview').style.display = 'none';
-  // preenche categorias no select
   document.getElementById('editItemCategory').innerHTML = data.categories.map(c =>
     `<option value="${c.id}" ${c.id === item.category_id ? 'selected' : ''}>${c.icon} ${c.name}</option>`
   ).join('');
+  renderVarAdminList(id);
+  document.getElementById('newVarName').value  = '';
+  document.getElementById('newVarPrice').value = '';
   document.getElementById('editModalBg').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
@@ -2369,6 +2654,135 @@ async function salvarEdicao() {
   document.body.style.overflow = '';
   renderAdmin(); renderMenu();
   toast('✅ Produto atualizado!');
+}
+
+// ── VARIAÇÕES — ADMIN ──
+function renderVarAdminList(itemId) {
+  const vars = (data.variations || []).filter(v => v.item_id === itemId).sort((a,b) => (a.position||0)-(b.position||0));
+  const el = document.getElementById('varAdminList');
+  if (!vars.length) { el.innerHTML = '<p style="color:var(--muted);font-size:0.78rem;padding:4px 0">Nenhuma variação ainda</p>'; return; }
+  el.innerHTML = vars.map(v => `
+    <div class="var-admin-item${v.active === false ? ' inativo' : ''}">
+      <span class="var-admin-item-name">${v.name}</span>
+      <span class="var-admin-item-price">R$ ${Number(v.price).toFixed(2).replace('.',',')}</span>
+      <label class="toggle-switch" style="transform:scale(0.85)" title="${v.active === false ? 'Oculto' : 'Visível'}">
+        <input type="checkbox" ${v.active !== false ? 'checked' : ''} onchange="toggleVarAtivo('${v.id}', this.checked)">
+        <span class="toggle-slider"></span>
+      </label>
+      <button class="btn-sm btn-danger" style="padding:4px 8px" onclick="removerVariacao('${v.id}')">✕</button>
+    </div>`).join('');
+}
+
+async function adicionarVariacaoAdmin() {
+  const itemId = document.getElementById('editItemId').value;
+  const name   = document.getElementById('newVarName').value.trim();
+  const price  = parseFloat(document.getElementById('newVarPrice').value);
+  if (!name) { toast('⚠️ Digite o nome da variação'); return; }
+  if (isNaN(price) || price < 0) { toast('⚠️ Preço inválido'); return; }
+  const pos = (data.variations || []).filter(v => v.item_id === itemId).length;
+  const { data: row, error } = await sb.from('variations').insert({ item_id: itemId, name, price, active: true, position: pos }).select().single();
+  if (error) { toast('❌ Erro ao salvar'); return; }
+  if (!data.variations) data.variations = [];
+  data.variations.push(row);
+  document.getElementById('newVarName').value  = '';
+  document.getElementById('newVarPrice').value = '';
+  renderVarAdminList(itemId);
+  renderMenu();
+  toast('✅ Variação adicionada!');
+}
+
+async function removerVariacao(varId) {
+  await sb.from('variations').delete().eq('id', varId);
+  data.variations = (data.variations || []).filter(v => v.id !== varId);
+  const itemId = document.getElementById('editItemId').value;
+  renderVarAdminList(itemId);
+  renderMenu();
+  toast('🗑️ Variação removida');
+}
+
+async function toggleVarAtivo(varId, ativo) {
+  await sb.from('variations').update({ active: ativo }).eq('id', varId);
+  const idx = (data.variations || []).findIndex(v => v.id === varId);
+  if (idx !== -1) data.variations[idx].active = ativo;
+  const itemId = document.getElementById('editItemId').value;
+  renderVarAdminList(itemId);
+  renderMenu();
+  toast(ativo ? '✅ Variação visível' : '🙈 Variação oculta');
+}
+
+// ── VARIAÇÕES — CLIENTE ──
+let varModalItemId = null;
+let varSelecionada = null;
+
+function abrirVarModal(itemId) {
+  const item = data.items.find(i => i.id === itemId);
+  if (!item) return;
+  const vars = (data.variations || []).filter(v => v.item_id === itemId && v.active !== false);
+  if (!vars.length) return;
+
+  varModalItemId = itemId;
+  varSelecionada = null;
+
+  // Header
+  const cat = data.categories.find(c => c.id === item.category_id);
+  const emoji = cat ? (cat.icon_url ? `<img src="${cat.icon_url}" style="width:100%;height:100%;object-fit:contain;">` : cat.icon) : '🥟';
+  document.getElementById('varModalThumb').innerHTML = imgEl(item.img_url, emoji, 'thumb');
+  document.getElementById('varModalName').textContent = item.name;
+  document.getElementById('varModalDesc').textContent = item.description || '';
+
+  // Opções
+  document.getElementById('varOptions').innerHTML = vars.map(v => `
+    <div class="var-option" id="varopt-${v.id}" onclick="selecionarVar('${v.id}', ${v.price}, '${v.name.replace(/'/g,"\\'")}')">
+      <div class="var-option-radio"></div>
+      <span class="var-option-name">${v.name}</span>
+      <span class="var-option-price">R$ ${Number(v.price).toFixed(2).replace('.',',')}</span>
+    </div>`).join('');
+
+  const btn = document.getElementById('varAddBtn');
+  btn.disabled = true;
+  btn.textContent = 'Selecione uma opção';
+
+  document.getElementById('varModalBg').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function fecharVarModal(e) {
+  if (e && e.target !== document.getElementById('varModalBg')) return;
+  document.getElementById('varModalBg').classList.remove('open');
+  document.body.style.overflow = '';
+  varModalItemId = null;
+  varSelecionada = null;
+}
+
+function selecionarVar(varId, price, name) {
+  varSelecionada = { varId, price, name };
+  document.querySelectorAll('.var-option').forEach(el => el.classList.remove('selected'));
+  document.getElementById('varopt-' + varId).classList.add('selected');
+  const btn = document.getElementById('varAddBtn');
+  btn.disabled = false;
+  btn.textContent = `Adicionar ${name} — R$ ${Number(price).toFixed(2).replace('.',',')}`;
+}
+
+function adicionarVariacao() {
+  if (!varModalItemId || !varSelecionada) return;
+  const item = data.items.find(i => i.id === varModalItemId);
+  // Usa chave composta item+variacao no carrinho
+  const cartKey = `${varModalItemId}__${varSelecionada.varId}`;
+  cart[cartKey] = (cart[cartKey] || 0) + 1;
+  // Guarda metadados da variação no carrinho
+  if (!cart.__meta) cart.__meta = {};
+  cart.__meta[cartKey] = {
+    itemId: varModalItemId,
+    name: `${item.name} (${varSelecionada.name})`,
+    price: varSelecionada.price,
+    img_url: item.img_url
+  };
+  updateCartUI();
+  document.getElementById('varModalBg').classList.remove('open');
+  document.body.style.overflow = '';
+  varModalItemId = null;
+  varSelecionada = null;
+  toast('✅ Adicionado ao carrinho!');
 }
 
 function toast(msg) {
